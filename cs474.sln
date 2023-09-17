@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cs474-client", "src\cs474-client.vcxproj", "{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cs474", "include\cs474.vcxproj", "{BE4F55EF-BD86-4733-AA49-37D31497AA19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Emscripten = Debug|Emscripten
+		Debug|x64 = Debug|x64
+		Release|Emscripten = Release|Emscripten
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Debug|Emscripten.ActiveCfg = Debug|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Debug|Emscripten.Build.0 = Debug|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Debug|x64.ActiveCfg = Debug|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Debug|x64.Build.0 = Debug|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Release|Emscripten.ActiveCfg = Release|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Release|Emscripten.Build.0 = Release|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Release|x64.ActiveCfg = Release|Emscripten
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}.Release|x64.Build.0 = Release|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Debug|Emscripten.ActiveCfg = Debug|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Debug|Emscripten.Build.0 = Debug|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Debug|x64.ActiveCfg = Debug|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Debug|x64.Build.0 = Debug|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|Emscripten.ActiveCfg = Release|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|Emscripten.Build.0 = Release|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|x64.ActiveCfg = Release|Emscripten
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|x64.Build.0 = Release|Emscripten
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0880232E-B5A9-4ACE-8430-80A7D0614255}
+	EndGlobalSection
+EndGlobal
