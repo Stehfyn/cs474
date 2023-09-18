@@ -10,6 +10,11 @@
 #include <vector>
 #include <sstream>
 #include <unordered_set>
+#include <map>
+#include <any>
+#include <mutex>
+#include <utility>
+#include <typeindex>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -28,9 +33,10 @@
 // https://stackoverflow.com/a/61810989/22468901
 #ifdef __INTELLISENSE__ 
 #pragma diag_suppress 312 // cs474::utils::SlurpFile()
+#pragma diag_suppress 415 // cs474::utils::SlurpFile()
 #endif
 
 #include "Utils/io.hpp"
 #include "Utils/js-helpers.h"
 #include "Utils/imgui_helpers.hpp"
-
+#include "Global/ResourceManager.h"

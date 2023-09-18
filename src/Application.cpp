@@ -2,9 +2,6 @@
 #include "Application.h"
 #include "Layer/Base.h"
 
-extern bool g_ApplicationRunning;
-extern cs474::Application* g_Instance;
-
 namespace cs474 {
 Application::Application(const ApplicationSpecification& spec)
     : m_Spec(spec) {
@@ -79,6 +76,14 @@ void Application::InitializeImGui() {
 
     // Setup style
     ImGui::StyleColorsDark();
+
+    auto fonts = utils::Traverse("assets/", "*.ttf");
+    for (const auto& font : fonts) {
+        io.Fonts->AddFontFromFileTTF(font.c_str(), 23.0f);
+        io.Fonts->AddFontFromFileTTF(font.c_str(), 18.0f);
+        io.Fonts->AddFontFromFileTTF(font.c_str(), 26.0f);
+        io.Fonts->AddFontFromFileTTF(font.c_str(), 32.0f);
+    }
 
     utils::resizeCanvas();
 }

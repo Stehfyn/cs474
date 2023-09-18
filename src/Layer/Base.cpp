@@ -21,6 +21,7 @@ void Base::OnUpdate(float ts) {
     m_FrameTime = ts;
 }
 void Base::OnUIRender() {
+    DoMainMenuBar();
     DoStatusBar();
 
     if (first_frame) {
@@ -28,6 +29,7 @@ void Base::OnUIRender() {
         // 2. We want our whole dock node to be positioned in the center of the window, so we'll need to calculate that first.
         // The "work area" is the space inside the platform window created by GLFW, SDL, etc. minus the main menu bar if present.
         ImRect rect = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->GetBuildWorkRect();   // The coordinates of the top-left corner of the work area
+        ImVec2 pos = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->CalcWorkRectPos(((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->BuildWorkOffsetMin);
         ImVec2 size{ rect.Max.x - rect.Min.x, rect.Max.y - rect.Min.y };
         // v1.81 (found by git blame) adds a new function GetWorkCenter() which does these same calculations, so for any code using a newer version:
         //
@@ -37,7 +39,7 @@ void Base::OnUIRender() {
         // 3. Now we'll need to create our dock node:
         ImGuiID id = ImGui::GetID("DockSpace"); // The string chosen here is arbitrary (it just gives us something to work with)
         ImGui::DockBuilderRemoveNode(id);             // Clear any preexisting layouts associated with the ID we just chose
-        ImGui::DockBuilderAddNode(id);                // Create a new dock node to use
+        ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_NoUndocking);                // Create a new dock node to use
 
         // Calculate the position of the dock node
         //
@@ -46,12 +48,14 @@ void Base::OnUIRender() {
         //
         // To fix this, we'll need to subtract half the node size from both the X and Y dimensions to move it left and up.
         // This new coordinate will be the position of the node's top-left corner that will center the node in the window.
-        //ImVec2 nodePos{ workCenter.x - size.x * 0.5f, workCenter.y - size.y * 0.5f };
+
+        //ImVec2 workCenter = ImGui::GetMainViewport()->GetWorkCenter();
+        auto& style = ImGui::GetStyle();
+        ImVec2 nodePos{ 0.f, 5 * style.FramePadding.y };
 
         // Set the size and position:
         ImGui::DockBuilderSetNodeSize(id, size);
-        //ImGui::DockBuilderSetNodeSize(id, size);
-        //ImGui::DockBuilderSetNodePos(id, nodePos);
+        ImGui::DockBuilderSetNodePos(id, pos);
 
         // 5. Split the dock node to create spaces to put our windows in:
 
@@ -96,8 +100,10 @@ void Base::OnUIRender() {
     
         first_frame = false;
     }
-
-	ImGui::Begin("Hello from Layer::Base!");
+    
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove;
+    static bool open = true;
+	ImGui::Begin("Hello from Layer::Base!", &open, window_flags);
 
     auto cd = std::filesystem::current_path();
     ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
@@ -114,7 +120,8 @@ void Base::OnUIRender() {
     }
 
 	ImGui::End();
-    ImGui::Begin("Image");
+
+    ImGui::Begin("Image", &open, window_flags);
     {
         if (images.size() > 0) {
             //ImVec2 size(ImGui::GetContentRegionAvail());
@@ -130,7 +137,7 @@ void Base::OnUIRender() {
             ImGui::Image((void*)(intptr_t)(img->GetRendererID()), size);
             if (ImGui::IsItemHovered() && ImGui::BeginTooltip())
             {
-                auto io = ImGui::GetIO();
+                auto& io = ImGui::GetIO();
                 float my_tex_w = size.x;
                 //float my_tex_w = img->GetWidth();
                 float my_tex_h = size.y;

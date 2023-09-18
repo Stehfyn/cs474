@@ -21,6 +21,7 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
+    <ClCompile Include="Global\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Utils\js-helpers.cpp" />
     <ClCompile Include="Layer\Base.cpp" />
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Global\ResourceManager.h" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="UIElement\UIElement.h" />

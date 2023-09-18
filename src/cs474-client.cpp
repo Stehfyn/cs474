@@ -1,21 +1,25 @@
 #include "cs474.pch.h"
 #include "Application.h"
 
-bool g_ApplicationRunning = true;
 cs474::Application* g_Instance = nullptr;
-
 namespace cs474 {
     int main(int argc, char** argv) {
         auto app = g_Instance = new Application();
+        global::AddResource("g_ApplicationRunning", true);
+
 #ifdef __EMSCRIPTEN__
         auto loop = []() {
+            auto g_ApplicationRunning = global::GetResourceUnwrapped("g_ApplicationRunning");
             if (g_ApplicationRunning) {
                 g_Instance->Run();
+            }
+            else {
+                emscripten_cancel_main_loop();
             }
         };
         emscripten_set_main_loop(loop, 0, 1);
 #else
-        while (g_ApplicationRunning) {
+        while (global::GetResourceUnwrapped("g_ApplicationRunning")) {
             app->Run();
         }
 #endif
