@@ -4,7 +4,7 @@ setlocal
 set root="%~dp0..\..\"
 pushd %root%
 
-set vsix_installer="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe"
+set vsix_installer="C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service\VSIXInstaller.exe"
 
 rem make tool cache
 if not exist external\VSExt\cache mkdir external\VSExt\cache
