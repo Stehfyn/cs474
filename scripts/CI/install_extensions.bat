@@ -1,10 +1,11 @@
 @echo off
 setlocal
 
-set root="%~dp0..\"
+set root="%~dp0..\..\"
 pushd %root%
 
-set runner_vs="C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service"
+set vsix_installer="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe"
+
 rem make tool cache
 if not exist external\VSExt\cache mkdir external\VSExt\cache
 
@@ -17,8 +18,7 @@ if not exist external\VSExt\cache\Emscripten.ExtensionPack.vsix (
 )
 
 rem install
-%runner_vs%\VSIXInstaller /q /a external\VSExt\cache\Emscripten.Build.Definition.vsix
-%runner_vs%\VSIXInstaller /q /a external\VSExt\cache\Emscripten.ExtensionPack.vsix
+%vsix_installer% /q /a external\VSExt\cache\Emscripten.Build.Definition.vsix
 
 popd
 endlocal

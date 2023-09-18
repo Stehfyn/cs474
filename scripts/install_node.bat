@@ -14,7 +14,7 @@ if not exist external\nodejs\cache\node-v18.17.1-x64.msi (
 
 rem install
 if not exist external\nodejs\node.exe (
-    msiexec /a external\nodejs\cache\node-v18.17.1-x64.msi /qn TARGETDIR="%CD%\external" /qb /l*v "install_7z.log"
+    msiexec /a external\nodejs\cache\node-v18.17.1-x64.msi /qn TARGETDIR="%CD%\external" /qb /l*v "install_node.log"
 )
 
 rem cleanup

@@ -41,13 +41,13 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: .\scripts\CI\move_assets.bat
 
+    - name: Install EMSDK
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: .\external\emsdk\emsdk.bat install latest
+
     - name: Install VS Extensions
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: .\scripts\CI\install_extensions.bat
-
-    - name: Install emsdk
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\external\emsdk\emsdk.bat install latest
 
     - name: Build Solution
       working-directory: ${{env.GITHUB_WORKSPACE}}
