@@ -32,7 +32,6 @@ static std::unordered_set<std::string> parse_search_pattern(const char* pattern)
     for (const auto& token : tokens) {
         auto valid_token = validate_token(token);
         if (valid_token.has_value()) {
-            emscripten_log(EM_LOG_CONSOLE, "token: {%s}", valid_token.value().c_str());
             search_set.emplace(valid_token.value());
         }
     }
@@ -40,7 +39,6 @@ static std::unordered_set<std::string> parse_search_pattern(const char* pattern)
     return search_set;
 }
 static bool is_in_search_set(const std::filesystem::path& path, const std::unordered_set<std::string>& search_set) {
-    emscripten_log(EM_LOG_CONSOLE, "ext: {%s}", path.extension().generic_string().c_str());
     auto it = search_set.find(path.extension().generic_string());
     return !((it == search_set.end()) && (search_set.find("*") == search_set.end()));
 }

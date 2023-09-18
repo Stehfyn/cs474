@@ -8,7 +8,6 @@ namespace cs474 {
     int main(int argc, char** argv) {
         auto app = g_Instance = new Application();
 #ifdef __EMSCRIPTEN__
-        emscripten_log(EM_LOG_CONSOLE, "wtf is going on");
         auto loop = []() {
             if (g_ApplicationRunning) {
                 g_Instance->Run();

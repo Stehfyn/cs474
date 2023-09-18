@@ -2,41 +2,15 @@
 #include "detail/io-detail.h"
 namespace cs474 {
 namespace utils {
-#ifndef __EMSCRIPTEN__
-static std::optional<std::vector<char>> SlurpFile(const std::filesystem::path& path) {
-    FILE* file = fopen(path.c_str(), "rb");
-    if (file == nullptr) {
-        return std::nullopt;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    emscripten_log(EM_LOG_CONSOLE, "file_size: {%ld}", file_size);
-
-    std::vector<char> buffer(file_size);
-    size_t bytes_read = fread(buffer.data(), 1, file_size, file);
-
-    fclose(file);
-
-    if (bytes_read == file_size) {
-        return buffer;
-    }
-    return std::nullopt;
-}
-#else
 static std::optional<std::vector<char>> SlurpFile(const std::filesystem::path path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize file_size = file.tellg();
     file.seekg(0, std::ios::beg);
-    emscripten_log(EM_LOG_CONSOLE, "file_size: {%zu}", file_size);
 
     std::vector<char> buffer(file_size);
     if (file.read(buffer.data(), file_size)) return buffer;
     return std::nullopt;
 }
-#endif
 static bool BurpFile(const std::filesystem::path& path, std::vector<char> buffer) {
     if (buffer.size() > 0) {
         try {
