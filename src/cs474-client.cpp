@@ -2,26 +2,27 @@
 #include "Application.h"
 
 bool g_ApplicationRunning = true;
-void* g_Instance = nullptr;
+cs474::Application* g_Instance = nullptr;
 
 namespace cs474 {
     int main(int argc, char** argv) {
-        cs474::Application* app = new cs474::Application();
-
+        auto app = g_Instance = new Application();
 #ifdef __EMSCRIPTEN__
+        emscripten_log(EM_LOG_CONSOLE, "wtf is going on");
         auto loop = []() {
             if (g_ApplicationRunning) {
-                ((cs474::Application*)g_Instance)->Run();
+                g_Instance->Run();
             }
         };
-
         emscripten_set_main_loop(loop, 0, 1);
 #else
         while (g_ApplicationRunning) {
             app->Run();
         }
 #endif
+        app->Cleanup();
         delete app;
+
         return 0;
     }
 } // namespace cs474
@@ -35,7 +36,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     UNREFERENCED_PARAMETER(lpCmdLine);
     UNREFERENCED_PARAMETER(nCmdShow);
 
-    return mcctp::main(__argc, __argv);
+    return cs474::main(__argc, __argv);
 }
 #endif // MSVC (Windows Native)
 

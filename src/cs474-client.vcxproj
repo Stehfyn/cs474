@@ -21,6 +21,9 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
+    <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Utils\js-helpers.cpp" />
+    <ClCompile Include="Layer\Base.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\include\cs474.vcxproj">
@@ -29,8 +32,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Graphics\Image.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="UIElement\UIElement.h" />
+    <ClInclude Include="Utils\detail\io-detail.h" />
+    <ClInclude Include="Utils\js-helpers.h" />
+    <ClInclude Include="Layer\Base.h" />
     <ClInclude Include="Layer\Layer.h" />
     <ClInclude Include="cs474.pch.h" />
+    <ClInclude Include="Utils\imgui_helpers.hpp" />
+    <ClInclude Include="Utils\io.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -57,14 +68,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-int\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(SolutionDir)bin\x64\$(Configuration)\</LibraryPath>
+    <LibraryPath>
+    </LibraryPath>
     <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-int\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(SolutionDir)bin\x64\$(Configuration)\</LibraryPath>
+    <LibraryPath>
+    </LibraryPath>
     <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
@@ -72,7 +85,7 @@
     <Link>
       <AdditionalDependencies>cs474</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -92,7 +105,7 @@
     <Link>
       <AdditionalDependencies>cs474</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>

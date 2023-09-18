@@ -402,3 +402,6 @@ Emscripten/
 
 # nodeJS
 external/nodejs
+
+# assets
+src/assets
