@@ -43,7 +43,7 @@ jobs:
 
     - name: Install EMSDK
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\external\emsdk\emsdk.bat install latest
+      run: .\external\emsdk\emsdk.bat install latest && .\external\emsdk\upstream\emscripten\emcc --generate-config
 
     - name: Install VS Extensions
       working-directory: ${{env.GITHUB_WORKSPACE}}
