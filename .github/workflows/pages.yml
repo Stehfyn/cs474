@@ -1,0 +1,64 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Github Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+  BUILD_PLATFORM: Emscripten
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Move Assets
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: .\scripts\CI\move_assets.bat
+
+    - name: Install VS Extensions
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: .\scripts\CI\install_extensions.bat
+
+    - name: Install emsdk
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: .\external\emsdk\emsdk.bat install latest
+
+    - name: Build Solution
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: bin\cs474-client\Emscripten\Release
+        # this option will not maintain any history of your previous pages deployment
+        # set to false if you want all page build to be committed to your gh-pages branch history
+        single-commit: true
