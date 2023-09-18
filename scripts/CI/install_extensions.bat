@@ -18,7 +18,7 @@ if not exist external\VSExt\cache\Emscripten.ExtensionPack.vsix (
 )
 
 rem install
-%vsix_installer% /q /a external\VSExt\cache\Emscripten.ExtensionPack.vsix
+%vsix_installer% /q /a external\VSExt\cache\Emscripten.Build.Definition.vsix
 
 popd
 endlocal
