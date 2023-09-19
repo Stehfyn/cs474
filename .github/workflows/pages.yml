@@ -57,6 +57,7 @@ jobs:
         path: Release
 
   deploy:
+    if: github.event_name == 'push'
     concurrency: ci-${{ github.ref }}
     needs: [build]
     runs-on: ubuntu-latest
