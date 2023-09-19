@@ -400,8 +400,14 @@ FodyWeavers.xsd
 # Emscripten
 Emscripten/
 
+# External cache
+external/cache
+
 # nodeJS
 external/nodejs
+
+# VSExt
+external/VSExt
 
 # assets
 src/assets

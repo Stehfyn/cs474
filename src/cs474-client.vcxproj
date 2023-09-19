@@ -73,7 +73,8 @@
     <LibraryPath>
     </LibraryPath>
     <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
@@ -81,7 +82,8 @@
     <LibraryPath>
     </LibraryPath>
     <IncludePath>$(SolutionDir)include;$(IncludePath)</IncludePath>
-    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <Link>
@@ -99,9 +101,21 @@
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <CustomBuildStep>
-      <Command>$(SolutionDir)scripts\install_node.bat</Command>
-      <Outputs>node-v18.17.1-x64.msi</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>$(SolutionDir)scripts\Build\copy_index.bat $(OutDir)</Command>
+      <Message>Copying Index.html to $(OutDir) ...</Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)scripts\Build\copy_assets.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copying Build Assets to $(ProjectDir) ...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <Link>
@@ -119,9 +133,21 @@
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <CustomBuildStep>
-      <Command>$(SolutionDir)scripts\install_node.bat</Command>
-      <Outputs>node-v18.17.1-x64.msi</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>$(SolutionDir)scripts\Build\copy_index.bat $(OutDir)</Command>
+      <Message>Copying Index.html to $(OutDir) ...</Message>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>$(SolutionDir)scripts\Build\copy_assets.bat</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copying Build Assets to $(ProjectDir) ...</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
