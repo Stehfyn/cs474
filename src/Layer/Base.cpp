@@ -4,27 +4,24 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "..\stb_image.h"
 namespace cs474 {
-
-Base::Base() 
-    : m_FrameTime(0.0)
-{
+Base::Base() {
 }
 Base::~Base() {
 }
 void Base::OnAttach() {
     LoadImages();
-    first_frame = true;
 }
 void Base::OnDetach() {
 }
 void Base::OnUpdate(float ts) {
-    m_FrameTime = ts;
+    global::UpdateResource("g_FrameTimeInMilliSeconds", 1000.0f * ts);
+    global::UpdateResource("g_FramesPerSecond", 1.0f / ts);
 }
 void Base::OnUIRender() {
     DoMainMenuBar();
-    DoStatusBar();
+    widgets::DrawStatusBar();
 
-    if (first_frame) {
+    if (global::GetResourceUnwrapped("g_FirstFrame")) {
 
         // 2. We want our whole dock node to be positioned in the center of the window, so we'll need to calculate that first.
         // The "work area" is the space inside the platform window created by GLFW, SDL, etc. minus the main menu bar if present.
@@ -97,8 +94,6 @@ void Base::OnUIRender() {
 
         // 7. We're done setting up our docking configuration:
         ImGui::DockBuilderFinish(id);
-    
-        first_frame = false;
     }
     
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove;
@@ -107,6 +102,8 @@ void Base::OnUIRender() {
 
     auto cd = std::filesystem::current_path();
     ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
+
+    const FileRegistry& files = global::GetResourceUnwrapped("g_ImageFiles");
     ImGui::Text("File Count: {%zu}", files.size());
 
     int i = 0;
@@ -114,6 +111,7 @@ void Base::OnUIRender() {
         ImGui::RadioButton(entry.generic_string().c_str(), &selected, i++);
     }
 
+    const graphics::TextureRegistry& images = global::GetResourceUnwrapped("g_Images");
     if (images.size() > 0) {
         const auto& img = images.at(selected);
         ImGui::Text("Size: {%zu}x{%zu}", img->GetWidth(), img->GetHeight());
@@ -199,27 +197,15 @@ void Base::DoMainMenuBar() {
     ImGui::EndMainMenuBar();
 }
 
-void Base::DoStatusBar() {
-    ImGuiWindowFlags window_flags = utils::GetHorizontalBarFlags();
-    float height = ImGui::GetFrameHeight();
-
-    if (ImGui::BeginViewportSideBar("##MainStatusBar", NULL, ImGuiDir_Down, height, window_flags)) {
-        if (ImGui::BeginMenuBar()) {
-            ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f * m_FrameTime,
-                1.0f / m_FrameTime);
-            ImGui::EndMenuBar();
-        }
-    }
-    ImGui::End();
-}
 void Base::LoadImages() {
-    files = utils::Traverse("/assets", "*.gif *.jpg *.png");
+    FileRegistry image_files = utils::Traverse("/assets", "*.gif *.jpg *.png");
 
-    for (const auto& file : files) {
+    graphics::TextureRegistry images;
+    for (const auto& file : image_files) {
         int image_width = 0;
         int image_height = 0;
 
-        auto data = utils::SlurpFile(file);
+        const auto& data = utils::SlurpFile(file);
         if (data.has_value()) {
             unsigned char* image_data = stbi_load_from_memory((unsigned char*)data.value().data(), data.value().size(), &image_width, &image_height, NULL, 4);
 
@@ -227,8 +213,12 @@ void Base::LoadImages() {
                 emscripten_log(EM_LOG_CONSOLE, "didnt work lol");
             }
 
-            images.emplace_back(std::make_shared<graphics::Image>(image_data, image_width, image_height, 4));
+            images.emplace_back(graphics::make_texture(image_data, image_width, image_height, 4));
+            stbi_image_free(image_data);
         }
     }
+
+    global::AddResource("g_Images", std::move(images));
+    global::AddResource("g_ImageFiles", std::move(image_files));
 }
 }

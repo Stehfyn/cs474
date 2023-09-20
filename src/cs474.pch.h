@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstdio>
 #include <string>
 #include <memory>
@@ -40,5 +41,10 @@
 #include "Utils/io.hpp"
 #include "Utils/js-helpers.h"
 #include "Utils/imgui_helpers.hpp"
-
+#include "Utils/atomic_mutex.hpp"
 #include "Global/ResourceManager.hpp"
+#include "Widgets/StatusBar.h"
+
+namespace cs474 {
+	using FileRegistry = std::vector<std::filesystem::path>;
+}

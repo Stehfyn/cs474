@@ -16,7 +16,7 @@
     <ClCompile Include="cs474.pch.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
     <ClCompile Include="Layer\Test.cpp" />
-    <ClCompile Include="UIElement\Markdown.cpp" />
+    <ClCompile Include="Widgets\Markdown.cpp" />
     <ClCompile Include="Utils\js-helpers.cpp" />
     <ClCompile Include="Layer\Base.cpp" />
   </ItemGroup>
@@ -34,8 +34,9 @@
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Layer\Test.h" />
-    <ClInclude Include="UIElement\Markdown.h" />
-    <ClInclude Include="UIElement\UIElement.h" />
+    <ClInclude Include="Widgets\Markdown.h" />
+    <ClInclude Include="Widgets\StatusBar.h" />
+    <ClInclude Include="Utils\atomic_mutex.hpp" />
     <ClInclude Include="Utils\detail\io-detail.h" />
     <ClInclude Include="Utils\js-helpers.h" />
     <ClInclude Include="Layer\Base.h" />

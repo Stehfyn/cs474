@@ -24,6 +24,16 @@ private:
 	size_t m_Height;
 	GLuint m_RendererID;
 };
+
+using Texture = std::shared_ptr<Image>;
+
+template <class... Args>
+Texture make_texture(Args&&... args) {
+	return std::make_shared<Image>(std::forward<Args>(args)...);
+}
+
+using TextureRegistry = std::vector<Texture>;
+
 }
 }
 

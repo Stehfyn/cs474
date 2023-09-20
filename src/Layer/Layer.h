@@ -1,8 +1,5 @@
 #pragma once
-#include "..\UIElement\UIElement.h"
 namespace cs474 {
-using UIElementStack = std::vector<std::shared_ptr<cs474::UIElement>>;
-
 class LayerBase {
 public:
 	virtual void OnAttach() = 0;
@@ -23,15 +20,6 @@ public:
 	virtual void OnUpdate(float ts) override {}
 	virtual void OnUIRender() override {}
 
-public:
-	template <typename T> void PushElement() {
-		static_assert(std::is_base_of<cs474::UIElement, T>::value,
-			"Pushed type is not subclass of UIElement!");
-		m_ElementStack.emplace_back(std::make_shared<T>())->OnAttach();
-	}
-
-private:
-	UIElementStack m_ElementStack;
 };
 
 } // namespace cs474

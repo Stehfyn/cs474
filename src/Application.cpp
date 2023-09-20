@@ -9,6 +9,8 @@ Application::Application(const ApplicationSpecification& spec)
     InitializeGL();
     InitializeImGui();
 
+    global::AddResource("g_FirstFrame", true);
+
     PushLayer<Base>();
     PushLayer<Test>();
 }
@@ -39,6 +41,10 @@ void Application::Run() {
         }
     }
     RenderAppFrame();
+
+    if (global::GetResourceUnwrapped("g_FirstFrame")) {
+        global::UpdateResource("g_FirstFrame", false);
+    }
 }
 
 void Application::Cleanup() {
