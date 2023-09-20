@@ -11,13 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\external\imgui\backends\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\external\imgui\backends\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\external\imgui\imgui.cpp" />
-    <ClCompile Include="..\external\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\external\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\external\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\external\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
@@ -27,6 +20,9 @@
     <ClCompile Include="Layer\Base.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\external\imgui.vcxproj">
+      <Project>{76095dd0-00a6-4336-9924-125a263e80ac}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\include\cs474.vcxproj">
       <Project>{be4f55ef-bd86-4733-aa49-37d31497aa19}</Project>
     </ProjectReference>
@@ -44,6 +40,9 @@
     <ClInclude Include="cs474.pch.h" />
     <ClInclude Include="Utils\imgui_helpers.hpp" />
     <ClInclude Include="Utils\io.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="index.html" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -87,8 +86,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <Link>
-      <AdditionalDependencies>cs474</AdditionalDependencies>
-      <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
+      <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
+      <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
       <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
@@ -119,8 +118,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <Link>
-      <AdditionalDependencies>cs474</AdditionalDependencies>
-      <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
+      <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
+      <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
       <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
