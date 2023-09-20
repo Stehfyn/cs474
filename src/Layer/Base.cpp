@@ -9,7 +9,7 @@ Base::Base() {
 Base::~Base() {
 }
 void Base::OnAttach() {
-    LoadImages();
+    this->LoadImages();
 }
 void Base::OnDetach() {
 }

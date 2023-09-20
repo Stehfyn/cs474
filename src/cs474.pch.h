@@ -42,7 +42,9 @@
 #include "Utils/js-helpers.h"
 #include "Utils/imgui_helpers.hpp"
 #include "Utils/atomic_mutex.hpp"
+
 #include "Global/ResourceManager.hpp"
+
 #include "Widgets/StatusBar.h"
 
 namespace cs474 {
