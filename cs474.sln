@@ -3,9 +3,38 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D50D950B-C19C-1ED5-6ABB-32D056292F7B}"
+	ProjectSection(SolutionItems) = preProject
+		setup.bat = setup.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{352CD55D-21E4-16AB-8AEB-EF0676C2B19B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{1D4A25CE-E895-42B0-82F5-FC40AE01B9B6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{B1D82354-E3B8-4F29-BA48-E05166777FA6}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\bootstrap_emcc.bat = scripts\bootstrap_emcc.bat
+		scripts\install_extension.bat = scripts\install_extension.bat
+		scripts\install_node.bat = scripts\install_node.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{D48DD573-3188-42DB-9A64-C02A18555758}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\CI\copy_release.bat = scripts\CI\copy_release.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{70B552D7-6AEF-4FA2-BAEB-DEE0AC300264}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\Build\copy_assets.bat = scripts\Build\copy_assets.bat
+		scripts\Build\copy_index.bat = scripts\Build\copy_index.bat
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cs474-client", "src\cs474-client.vcxproj", "{14CCC210-1667-4DE1-A6C6-F168A6AC8C52}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cs474", "include\cs474.vcxproj", "{BE4F55EF-BD86-4733-AA49-37D31497AA19}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "external\imgui.vcxproj", "{76095DD0-00A6-4336-9924-125A263E80AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,9 +60,25 @@ Global
 		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|Emscripten.Build.0 = Release|Emscripten
 		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|x64.ActiveCfg = Release|Emscripten
 		{BE4F55EF-BD86-4733-AA49-37D31497AA19}.Release|x64.Build.0 = Release|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Debug|Emscripten.ActiveCfg = Debug|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Debug|Emscripten.Build.0 = Debug|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Debug|x64.ActiveCfg = Debug|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Debug|x64.Build.0 = Debug|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Release|Emscripten.ActiveCfg = Release|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Release|Emscripten.Build.0 = Release|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Release|x64.ActiveCfg = Release|Emscripten
+		{76095DD0-00A6-4336-9924-125A263E80AC}.Release|x64.Build.0 = Release|Emscripten
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B1D82354-E3B8-4F29-BA48-E05166777FA6} = {D50D950B-C19C-1ED5-6ABB-32D056292F7B}
+		{D48DD573-3188-42DB-9A64-C02A18555758} = {B1D82354-E3B8-4F29-BA48-E05166777FA6}
+		{70B552D7-6AEF-4FA2-BAEB-DEE0AC300264} = {B1D82354-E3B8-4F29-BA48-E05166777FA6}
+		{14CCC210-1667-4DE1-A6C6-F168A6AC8C52} = {352CD55D-21E4-16AB-8AEB-EF0676C2B19B}
+		{BE4F55EF-BD86-4733-AA49-37D31497AA19} = {352CD55D-21E4-16AB-8AEB-EF0676C2B19B}
+		{76095DD0-00A6-4336-9924-125A263E80AC} = {1D4A25CE-E895-42B0-82F5-FC40AE01B9B6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0880232E-B5A9-4ACE-8430-80A7D0614255}
