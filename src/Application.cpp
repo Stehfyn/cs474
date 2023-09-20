@@ -1,6 +1,7 @@
 #include "cs474.pch.h"
 #include "Application.h"
 #include "Layer/Base.h"
+#include "Layer/Test.h"
 
 namespace cs474 {
 Application::Application(const ApplicationSpecification& spec)
@@ -9,6 +10,7 @@ Application::Application(const ApplicationSpecification& spec)
     InitializeImGui();
 
     PushLayer<Base>();
+    PushLayer<Test>();
 }
 
 Application::~Application() {

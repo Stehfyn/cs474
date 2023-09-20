@@ -10,5 +10,9 @@ EM_JS(int, canvas_get_height, (), {
 EM_JS(void, resizeCanvas, (), {
     js_resizeCanvas();
     });
+EM_JS(void, openUrlInNewTab, (const char* url), {
+    var jsString = UTF8ToString(url);
+    openInNewTab(jsString);
+    });
 }
 }

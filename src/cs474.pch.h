@@ -28,6 +28,7 @@
 #include "imgui_internal.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "imgui_md.h"
 
 // Edison Design Group powers Intellisense, does not handle Clang-based well
 // https://stackoverflow.com/a/61810989/22468901
