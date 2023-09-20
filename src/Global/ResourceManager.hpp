@@ -4,7 +4,7 @@ namespace global {
 class Resource {
 public:
 	Resource() = default;
-    Resource(const std::any& value);
+    Resource(const std::any& value) : m_Value(value) {}
 
 public:
     template<typename T>

@@ -40,4 +40,5 @@
 #include "Utils/io.hpp"
 #include "Utils/js-helpers.h"
 #include "Utils/imgui_helpers.hpp"
-#include "Global/ResourceManager.h"
+
+#include "Global/ResourceManager.hpp"

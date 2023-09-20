@@ -7,9 +7,9 @@ enum Status {
 	Invalid = (size_t)-1
 };
 
-Image::Image(std::vector<uint8_t>& data, uint32_t width, uint32_t height, uint32_t channels)
+Image::Image(const std::vector<uint8_t>& data, uint32_t width, uint32_t height, uint32_t channels)
 	: m_RendererID(Status::Invalid), m_Width(width), m_Height(height) {
-	m_RendererID = CreateTexture(data, width, height, channels);
+	m_RendererID = CreateTexture((unsigned char*)data.data(), width, height, channels);
 	Unbind();
 }
 
@@ -45,8 +45,9 @@ GLuint Image::GetRendererID() const{
 	return m_RendererID;
 }
 
-GLuint Image::CreateTexture(std::vector<uint8_t>& data, uint32_t width, uint32_t height, uint32_t channels)
-{
+// Something to test around and keep in mind:
+// https://github.com/ocornut/imgui/issues/3523
+GLuint Image::CreateTexture(unsigned char* data, uint32_t width, uint32_t height, uint32_t channels) {
 	GLuint tex;
 	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);
@@ -60,25 +61,9 @@ GLuint Image::CreateTexture(std::vector<uint8_t>& data, uint32_t width, uint32_t
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data());
-	glBindTexture(GL_TEXTURE_2D, 0);
-	return tex;
-}
-
-GLuint Image::CreateTexture(unsigned char* data, uint32_t width, uint32_t height, uint32_t channels) {
-	GLuint tex;
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-		GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
+	#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
+		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	#endif
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	return tex;
