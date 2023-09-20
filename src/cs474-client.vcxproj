@@ -14,8 +14,9 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
-    <ClCompile Include="Global\ResourceManager.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Layer\Test.cpp" />
+    <ClCompile Include="Widgets\Markdown.cpp" />
     <ClCompile Include="Utils\js-helpers.cpp" />
     <ClCompile Include="Layer\Base.cpp" />
   </ItemGroup>
@@ -29,10 +30,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
-    <ClInclude Include="Global\ResourceManager.h" />
+    <ClInclude Include="Global\ResourceManager.hpp" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="UIElement\UIElement.h" />
+    <ClInclude Include="Layer\Test.h" />
+    <ClInclude Include="Widgets\Markdown.h" />
+    <ClInclude Include="Widgets\StatusBar.h" />
+    <ClInclude Include="Utils\atomic_mutex.hpp" />
     <ClInclude Include="Utils\detail\io-detail.h" />
     <ClInclude Include="Utils\js-helpers.h" />
     <ClInclude Include="Layer\Base.h" />
@@ -95,7 +99,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -127,7 +131,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>

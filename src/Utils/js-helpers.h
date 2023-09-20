@@ -6,6 +6,7 @@ extern "C" {
 	int canvas_get_width(void);
 	int canvas_get_height(void);
 	void resizeCanvas(void);
+	void openUrlInNewTab(const char* url);
 }
 }
 }

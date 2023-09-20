@@ -4,7 +4,7 @@ namespace global {
 class Resource {
 public:
 	Resource() = default;
-    Resource(const std::any& value);
+    Resource(std::any value) : m_Value(std::move(value)) {}
 
 public:
     template<typename T>
@@ -12,8 +12,9 @@ public:
         try {
             return std::any_cast<T>(m_Value);
         }
-        catch (const std::bad_any_cast&) {
-            return T{}; // Return default-constructed value on type mismatch
+        catch (const std::bad_any_cast& e) {
+            // Should log it, then forward the throw
+            throw;
         }
     }
 
@@ -31,7 +32,7 @@ public:
 public:
     template<typename T>
     void AddResource(const std::string& name, T&& resource) {
-        std::lock_guard<std::mutex> lock(m_ResourceMutex);
+        utils::atomic_guard lock(m_ResourceMutex);
         auto it = m_ResourceMap.find(name);
         if (it != m_ResourceMap.end()) {
             if (it->second.second != typeid(T)) {
@@ -51,11 +52,23 @@ public:
         }
     }
 
-    std::optional<Resource> GetResource(const std::string& name) {
-        std::lock_guard<std::mutex> lock(m_ResourceMutex);
+    std::optional<std::reference_wrapper<const Resource>> GetResource(const std::string& name) {
+        utils::atomic_guard lock(m_ResourceMutex);
         auto it = m_ResourceMap.find(name);
         if (it != m_ResourceMap.end()) {
-            return it->second.first;
+            return std::cref(it->second.first);
+        }
+        else {
+            return std::nullopt;
+        }
+        
+    }
+
+    std::optional<std::reference_wrapper<Resource>> GetResourceMut(const std::string& name) {
+        utils::atomic_guard lock(m_ResourceMutex);
+        auto it = m_ResourceMap.find(name);
+        if (it != m_ResourceMap.end()) {
+            return std::ref(it->second.first);
         }
         else {
             return std::nullopt;
@@ -68,7 +81,7 @@ private:
     void operator=(const ResourceManager&) = delete;
 
     std::map<std::string, std::pair<Resource, std::type_index>> m_ResourceMap;
-    std::mutex m_ResourceMutex;
+    utils::atomic_mutex m_ResourceMutex;
 };
 
 template <class... Args>
@@ -81,12 +94,21 @@ static void UpdateResource(Args&&... args) {
     AddResource(std::forward<Args>(args)...);
 }
 
-static std::optional<Resource> GetResource(const std::string& name) {
+static std::optional<std::reference_wrapper<const Resource>> GetResource(const std::string& name) {
     return global::ResourceManager::Instance().GetResource(name);
 }
 
-static Resource GetResourceUnwrapped(const std::string& name) {
-    return global::ResourceManager::Instance().GetResource(name).value();
+static std::optional<std::reference_wrapper<Resource>> GetResourceMut(const std::string& name) {
+    return global::ResourceManager::Instance().GetResourceMut(name);
 }
+
+static const Resource& GetResourceUnwrapped(const std::string& name) {
+    return GetResource(name).value();
+}
+
+static Resource& GetResourceMutUnwrapped(const std::string& name) {
+    return GetResourceMut(name).value();
+}
+
 }
 }

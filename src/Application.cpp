@@ -1,6 +1,7 @@
 #include "cs474.pch.h"
 #include "Application.h"
 #include "Layer/Base.h"
+#include "Layer/Test.h"
 
 namespace cs474 {
 Application::Application(const ApplicationSpecification& spec)
@@ -8,7 +9,10 @@ Application::Application(const ApplicationSpecification& spec)
     InitializeGL();
     InitializeImGui();
 
+    global::AddResource("g_FirstFrame", true);
+
     PushLayer<Base>();
+    PushLayer<Test>();
 }
 
 Application::~Application() {
@@ -37,6 +41,10 @@ void Application::Run() {
         }
     }
     RenderAppFrame();
+
+    if (global::GetResourceUnwrapped("g_FirstFrame")) {
+        global::UpdateResource("g_FirstFrame", false);
+    }
 }
 
 void Application::Cleanup() {

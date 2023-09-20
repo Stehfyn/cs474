@@ -15,14 +15,9 @@ public:
 
 private:
 	void DoMainMenuBar();
-	void DoStatusBar();
 	void LoadImages();
 
 private:
-	bool first_frame = false;
-	float m_FrameTime;
-	std::vector<std::filesystem::path> files;
-	std::vector<std::shared_ptr<graphics::Image>> images;
 	int selected = 0;
 };
 }
