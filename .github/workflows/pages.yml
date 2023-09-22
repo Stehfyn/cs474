@@ -27,7 +27,6 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name == 'pull_request'
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v3
@@ -60,6 +59,7 @@ jobs:
   deploy:
     if: github.event_name == 'push'
     concurrency: ci-${{ github.ref }}
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
