@@ -27,6 +27,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event_name == 'pull_request'
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v3
