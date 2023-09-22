@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CI", "CI", "{D48DD573-3188-42DB-9A64-C02A18555758}"
 	ProjectSection(SolutionItems) = preProject
 		scripts\CI\copy_release.bat = scripts\CI\copy_release.bat
+		scripts\CI\rmdir.bat = scripts\CI\rmdir.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{70B552D7-6AEF-4FA2-BAEB-DEE0AC300264}"

@@ -4,4 +4,5 @@
 // TODO: This is an example of a library function
 void fcns474lib()
 {
+    int x = 0;
 }

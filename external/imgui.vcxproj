@@ -56,12 +56,20 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui; $(SolutionDir)external\imgui_md;  $(SolutionDir)external\md4c\src</AdditionalIncludeDirectories>
+      <EchoCommandLines>true</EchoCommandLines>
     </ClCompile>
+    <Lib>
+      <EchoCommandLines>true</EchoCommandLines>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui; $(SolutionDir)external\imgui_md;  $(SolutionDir)external\md4c\src</AdditionalIncludeDirectories>
+      <EchoCommandLines>true</EchoCommandLines>
     </ClCompile>
+    <Lib>
+      <EchoCommandLines>true</EchoCommandLines>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -38,13 +38,17 @@ jobs:
 
     - name: Setup Dev Environment
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\setup.bat
+      run: .\setup.bat --bypass
+
+    - name: Install make
+       working-directory: ${{env.GITHUB_WORKSPACE}}
+       run: winget install GnuWin32.Make
 
     - name: Build Solution
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
+      run: "C:\Program Files (x86)\GnuWin32\bin\make.exe" Release
 
     - name: Copy Release
       working-directory: ${{env.GITHUB_WORKSPACE}}
