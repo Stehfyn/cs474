@@ -41,8 +41,8 @@ jobs:
       run: .\setup.bat --bypass
 
     - name: Install make
-       working-directory: ${{env.GITHUB_WORKSPACE}}
-       run: winget install GnuWin32.Make
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: winget install GnuWin32.Make
 
     - name: Build Solution
       working-directory: ${{env.GITHUB_WORKSPACE}}
