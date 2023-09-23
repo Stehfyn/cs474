@@ -58,7 +58,7 @@ jobs:
 
     - name: Copy Release
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: .\scripts\CI\copy_release.bat
+      run: .\scripts\CI\copy_release.bat && .\scripts\Build\copy_index.bat Release
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v1
