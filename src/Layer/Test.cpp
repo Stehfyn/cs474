@@ -18,12 +18,12 @@ void Test::OnUIRender() {
 void Test::DoMarkdownTest() {
 	ImGui::Begin("Markdown test window");
 	ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow()); //bring to front without focusing
-	markdown(R"(
+	widgets::markdown(R"(
        # Title
        Some content...
     )");
 
-	markdown(R"(Name &nbsp; &nbsp; &nbsp; &nbsp; | Multiline &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>header  | [Link&nbsp;](#link1)
+	widgets::markdown(R"(Name &nbsp; &nbsp; &nbsp; &nbsp; | Multiline &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>header  | [Link&nbsp;](#link1)
 :------|:-------------------|:--
 Value-One | Long <br>explanation <br>with \<br\>\'s|1
 ~~Value-Two~~ | __text auto wrapped__\: long explanation here |25 37 43 56 78 90

@@ -1,5 +1,10 @@
 #pragma once
 namespace cs474 {
+namespace widgets {
+struct FontOptions {
+
+};
+
 struct Markdown : public imgui_md {
 	ImFont* get_font() const override;
 	void open_url() const override;
@@ -8,4 +13,5 @@ struct Markdown : public imgui_md {
 };
 
 void markdown(const std::string& string);
+}
 }
