@@ -1,8 +1,6 @@
 #include "..\cs474.pch.h"
 #include "Base.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "..\stb_image.h"
 namespace cs474 {
 Base::Base() {
 }

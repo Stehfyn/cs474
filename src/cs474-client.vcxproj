@@ -32,7 +32,6 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Global\ResourceManager.hpp" />
     <ClInclude Include="Graphics\Image.h" />
-    <ClInclude Include="stb_image.h" />
     <ClInclude Include="Layer\Test.h" />
     <ClInclude Include="Widgets\Markdown.h" />
     <ClInclude Include="Widgets\StatusBar.h" />
@@ -99,7 +98,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -131,7 +130,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
     </ClCompile>
