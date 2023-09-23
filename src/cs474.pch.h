@@ -31,6 +31,8 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui_md.h"
 
+#include "stb_image.h"
+
 // Edison Design Group powers Intellisense, does not handle Clang-based well
 // https://stackoverflow.com/a/61810989/22468901
 #ifdef __INTELLISENSE__ 

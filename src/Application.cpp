@@ -3,6 +3,9 @@
 #include "Layer/Base.h"
 #include "Layer/Test.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace cs474 {
 Application::Application(const ApplicationSpecification& spec)
     : m_Spec(spec) {
