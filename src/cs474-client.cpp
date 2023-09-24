@@ -1,6 +1,7 @@
 #include "cs474.pch.h"
 #include "Application.h"
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 cs474::Application* g_Instance = nullptr;
 namespace cs474 {
     int main(int argc, char** argv) {

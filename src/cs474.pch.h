@@ -31,6 +31,9 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui_md.h"
 
+// #include "ImTween.h" // need to fix for -std=c++2a
+#include "ImCoolbar.h"
+#include "IconsFontAwesome6.h"
 #include "stb_image.h"
 
 // Edison Design Group powers Intellisense, does not handle Clang-based well
@@ -40,15 +43,15 @@
 #pragma diag_suppress 415 // cs474::utils::SlurpFile()
 #endif
 
-#include "Utils/io.hpp"
-#include "Utils/js-helpers.h"
-#include "Utils/imgui_helpers.hpp"
 #include "Utils/atomic_mutex.hpp"
-
 #include "Global/ResourceManager.hpp"
 
-#include "Widgets/StatusBar.h"
+#include "Utils/io.hpp"
+#include "Utils/js-helpers.h"
 
+#include "Utils/imgui_helpers.hpp"
+
+#include "Widgets/StatusBar.h"
 namespace cs474 {
 	using FileRegistry = std::vector<std::filesystem::path>;
 }

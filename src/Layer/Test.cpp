@@ -13,22 +13,44 @@ void Test::OnDetach() {
 void Test::OnUpdate(float ts) {
 }
 void Test::OnUIRender() {
-	DoMarkdownTest();
+    DoMarkdownTest();
 }
 void Test::DoMarkdownTest() {
-	ImGui::Begin("Markdown test window");
-	ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow()); //bring to front without focusing
-	widgets::markdown(R"(
-       # Title
-       Some content...
-    )");
+    ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Dear ImGui Demo"));
+    /*
+    ImGui::Begin("TweenWindow");
+    static float settingsButtonWidth = 52.0f;
+    static float rectwidth = 65.f;
+    static float closeButtonWidth = 51.0f;
+    ImVec2 size1 = { settingsButtonWidth, 100. };
+    ImVec2 size2 = { closeButtonWidth, 100. };
+    ImGui::Button("settingsButton", size1);
+    bool settingsButtonIsHovered = ImGui::IsItemHovered();
+    ImGui::Button("closeButton", size2);
+    bool closeButtonIsHovered = ImGui::IsItemHovered();
+    if (ImGui::IsWindowFocused())
+    {
+        ImTween<float>::Tween(
+            std::tuple { 50.0f, 100.0f, & settingsButtonWidth },
+            std::tuple { 50.0f, 100.0f, & closeButtonWidth })
+            .OfType(ImTween<float>::TweenType::PingPong)
+            .Speed(ImGui::GetIO().DeltaTime * 8.0f)
+            .When(
+                [&]()
+                {
+                    return settingsButtonIsHovered || closeButtonIsHovered;
+                })
+            .OnComplete( //Optional
+                [&]()
+                {
+                    // Do something when tween completes
+                }).Tick();
+    }
 
-	widgets::markdown(R"(Name &nbsp; &nbsp; &nbsp; &nbsp; | Multiline &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>header  | [Link&nbsp;](#link1)
-:------|:-------------------|:--
-Value-One | Long <br>explanation <br>with \<br\>\'s|1
-~~Value-Two~~ | __text auto wrapped__\: long explanation here |25 37 43 56 78 90
-**etc** | [~~Some **link**~~](https://github.com/mekhontsev/imgui_md)|3)");
-	ImGui::End();
+        ImGui::Text("close: %f", closeButtonWidth);
+        ImGui::Text("settings: %f", settingsButtonWidth);
+        ImGui::End();
+        */
 }
 }
 // https://github.com/pthom/imgui_bundle/tree/main/external/imgui_md/imgui_md_wrapper

@@ -36,5 +36,14 @@ static std::vector<std::filesystem::path> Traverse(const std::filesystem::path& 
     auto search_set = detail::parse_search_pattern(pattern);
     return detail::traverse_impl(dir, search_set, depth);
 }
+
+template <typename T> //https://stackoverflow.com/a/16606128
+static std::string ToStringWithPrecision(const T a_value, const int n = 6)
+{
+    std::ostringstream out;
+    out.precision(n);
+    out << std::fixed << a_value;
+    return std::move(out).str();
+}
 }
 }
