@@ -1,6 +1,6 @@
 #include "..\cs474.pch.h"
 #include "Base.h"
-
+#include "..\Widgets\Markdown.h"
 namespace cs474 {
 Base::Base() {
 }
@@ -16,109 +16,175 @@ void Base::OnUpdate(float ts) {
     global::UpdateResource("g_FramesPerSecond", 1.0f / ts);
 }
 void Base::OnUIRender() {
-    DoMainMenuBar();
-    widgets::DrawStatusBar();
+    //this->DoMainMenuBar();
 
     if (global::GetResourceUnwrapped("g_FirstFrame")) {
-
-        // 2. We want our whole dock node to be positioned in the center of the window, so we'll need to calculate that first.
-        // The "work area" is the space inside the platform window created by GLFW, SDL, etc. minus the main menu bar if present.
-        ImRect rect = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->GetBuildWorkRect();   // The coordinates of the top-left corner of the work area
-        ImVec2 pos = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->CalcWorkRectPos(((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->BuildWorkOffsetMin);
-        ImVec2 size{ rect.Max.x - rect.Min.x, rect.Max.y - rect.Min.y };
-        // v1.81 (found by git blame) adds a new function GetWorkCenter() which does these same calculations, so for any code using a newer version:
-        //
-        // if (firstLoop) {
-        //     ImVec2 workCenter = ImGui::GetMainViewport()->GetWorkCenter();
-
-        // 3. Now we'll need to create our dock node:
-        ImGuiID id = ImGui::GetID("DockSpace"); // The string chosen here is arbitrary (it just gives us something to work with)
-        ImGui::DockBuilderRemoveNode(id);             // Clear any preexisting layouts associated with the ID we just chose
-        ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_NoUndocking);                // Create a new dock node to use
-
-        // Calculate the position of the dock node
-        //
-        // `DockBuilderSetNodePos()` will position the top-left corner of the node to the coordinate given.
-        // This means that the node itself won't actually be in the center of the window; its top-left corner will.
-        //
-        // To fix this, we'll need to subtract half the node size from both the X and Y dimensions to move it left and up.
-        // This new coordinate will be the position of the node's top-left corner that will center the node in the window.
-
-        //ImVec2 workCenter = ImGui::GetMainViewport()->GetWorkCenter();
-        auto& style = ImGui::GetStyle();
-        ImVec2 nodePos{ 0.f, 5 * style.FramePadding.y };
-
-        // Set the size and position:
-        ImGui::DockBuilderSetNodeSize(id, size);
-        ImGui::DockBuilderSetNodePos(id, pos);
-
-        // 5. Split the dock node to create spaces to put our windows in:
-
-        // Split the dock node in the left direction to create our first docking space. This will be on the left side of the node.
-        // (The 0.5f means that the new space will take up 50% of its parent - the dock node.)
-        ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.75f, nullptr, &id);
-        // +-----------+
-        // |           |
-        // |     1     |
-        // |           |
-        // +-----------+
-
-        // Split the same dock node in the right direction to create our second docking space.
-        // At this point, the dock node has two spaces, one on the left and one on the right.
-        ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.25f, nullptr, &id);
-        // +-----+-----+
-        // |     |     |
-        // |  1  |  2  |
-        // |     |     |
-        // +-----+-----+
-        //    split ->
-
-        // For our last docking space, we want it to be under the second one but not under the first.
-        // Split the second space in the down direction so that we now have an additional space under it.
-        //
-        // Notice how "dock2" is now passed rather than "id".
-        // The new space takes up 50% of the second space rather than 50% of the original dock node.
-        //ImGuiID dock3 = ImGui::DockBuilderSplitNode(dock2, ImGuiDir_Down, 0.5f, nullptr, &dock2);
-        // +-----+-----+
-        // |     |  2  |  split
-        // |  1  +-----+    |
-        // |     |  3  |    V
-        // +-----+-----+
-
-        // 6. Add windows to each docking space:
-        ImGui::DockBuilderDockWindow("Image", dock1);
-        ImGui::DockBuilderDockWindow("Hello from Layer::Base!", dock2);
-        //ImGui::DockBuilderDockWindow("Three", dock3);
-
-        // 7. We're done setting up our docking configuration:
-        ImGui::DockBuilderFinish(id);
+    //if (true) {
+        this->BuildDockspace();
     }
     
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove;
+    this->DoTableOfContents();
+    this->DoLandingPage();
+    this->DoImageTab();
+    this->DoWidgetPanel();
+
+    if (global::GetResourceUnwrapped("g_FirstFrame")) {
+        ImGui::SetWindowFocus("LandingPage");
+    }
+
+    widgets::DrawStatusBar();
+}
+
+void Base::DoMainMenuBar() {
+    auto& style = ImGui::GetStyle();
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(style.FramePadding.x, 5 * style.FramePadding.y));
+    ImGui::BeginMainMenuBar();
+    ImGui::PopStyleVar();
+    if (ImGui::BeginMenu("File")) {
+        ImGui::MenuItem("New");
+        ImGui::MenuItem("Create");
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit")) {
+        ImGui::MenuItem("New");
+        ImGui::MenuItem("Create");
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("View")) {
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Project")) {
+        ImGui::MenuItem("New");
+        ImGui::MenuItem("Create");
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Window")) {
+        ImGui::MenuItem("New");
+        ImGui::MenuItem("Create");
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Help")) {
+        ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+}
+void Base::DoTableOfContents() {
     static bool open = true;
-	ImGui::Begin("Hello from Layer::Base!", &open, window_flags);
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
+    
+    static ImGuiDockNodeFlags dnf = utils::GetNoDockingPanelDockNodeFlags();
+    ImGuiWindowClass wc;
+    wc.DockNodeFlagsOverrideSet = dnf | ImGuiDockNodeFlags_NoResize;
+    ImGui::SetNextWindowClass(&wc);
+    ImGui::Begin("TableOfContents", &open, window_flags);
+    {
+        widgets::markdown("# Table of Contents");
 
-    auto cd = std::filesystem::current_path();
-    ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
+        if (global::GetResourceUnwrapped("g_FirstFrame")) {
+            ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+        }
 
-    const FileRegistry& files = global::GetResourceUnwrapped("g_ImageFiles");
-    ImGui::Text("File Count: {%zu}", files.size());
-
-    int i = 0;
-    for (const auto& entry : files) {
-        ImGui::RadioButton(entry.generic_string().c_str(), &selected, i++);
+        if (ImGui::CollapsingHeader("Assignments")) {
+            widgets::markdown(R"(## Assignment 1
+&nbsp; 1. [Image Sampling](#example)<br>
+&nbsp; 2. [Image Quantization](#example)<br>
+&nbsp; 3. [Histogram Equalization](#example)<br>
+&nbsp; 4. [Histogram Specification](#example)<br>
+)");
+        }
     }
+    ImGui::End();
+}
 
-    const graphics::TextureRegistry& images = global::GetResourceUnwrapped("g_Images");
-    if (images.size() > 0) {
-        const auto& img = images.at(selected);
-        ImGui::Text("Size: {%zu}x{%zu}", img->GetWidth(), img->GetHeight());
-    }
+void Base::DoLandingPage() {
 
-	ImGui::End();
+    static bool open = true;
+    ImGuiWindowFlags window_flags = utils::GetBaseLayerWindowFlags();
+    ImGuiWindowClass wc;
+    wc.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize;
+    ImGui::SetNextWindowClass(&wc);
+    
+    ImGui::Begin("LandingPage", &open, window_flags);
+    widgets::markdown(R"(# CS474 - Image Processing and Interpretation
+A WebAssembly/Native Windows application for testing and visualizing Image Processing and Interpretation theory.
 
+Stephen Foster: [@Stehfyn](https://github.com/Stehfyn)<br>
+Joey Paschke [@DuckieOnQuacks](https://github.com/DuckieOnQuacks)
+## Live Version
+ A live version can be found at: [stehfyn.github.io/cs474/](https://stehfyn.github.io/cs474/)
+## How to build
+Build support is provided for `Visual Studio 2022`. The build system dependencies are as follows:
+- `Visual Studio 2022`
+- [`VSExtForEmscripten`](https://github.com/nokotan/VSExtForEmscripten/) v0.8.0 or higher.
+- The specific extension is `Emscripten.Build.Definition.vsix`, and can be found [here](https://github.com/nokotan/VSExtForEmscripten/releases/download/v0.8.0/Emscripten.Build.Definition.vsix).
+
+### Build Steps
+*Note* - It is recommended to first install [`Emscripten.Build.Definition.vsix`](https://github.com/nokotan/VSExtForEmscripten/releases/download/v0.8.0/Emscripten.Build.Definition.vsix) manually, as opposed to using `setup.bat` which may take awhile.
+
+First, you can clone the repository and its submodule:
+```bash
+git clone --recursive https://github.com/Stehfyn/cs474
+```
+Or do the following if you cloned the repo non-recursively already:
+```bash
+cd cs474
+git submodule update --init --recursive
+```
+Then, if you have already installed `Emscripten.Build.Definition.vsix`, just
+```
+cd cs474
+.\setup.bat --bypass
+```
+Or, if you wish to to have it automatically installed:
+```
+cd cs474
+.\setup.bat
+```
+Finally, you may open `cs474.sln` with `Visual Studio 2022` and build for platform `Emscripten`.
+Or, with the `Developer Command Prompt for VS`, just do:
+```bash
+cd cs474
+msbuild /m /p:Configuration=Release /p:Platform=Emscripten .
+```
+
+### Locally Hosting the Build
+The [`VSExtForEmscripten`](https://github.com/nokotan/VSExtForEmscripten/) provides support via the Visual Studio Debugger UI for testing builds on `localhost`, but this is not recommended as it is currently far from stable. A suitable alternative is just using `Python`'s http package:
+
+To do so, first `cd` into either a Debug or Release configuration of a `cs474-client` build directory with a successful build (The build directory pattern is `bin\cs474-client\Emscripten\{Configuration}\`), then invoke the `Python` http.server:
+```bash
+cd bin\cs474-client\Emscripten\Release\
+python3 -m http.server 8080
+```
+Then launch any browser and navigate to `localhost:8080/index.html`, and voila!
+)");
+    ImGui::End();
+}
+
+void Base::DoImageTab() {
+    ImGuiWindowFlags window_flags = utils::GetBaseLayerWindowFlags();
+    static bool open = true;
+    ImGuiWindowClass wc;
+    wc.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize;
+    ImGui::SetNextWindowClass(&wc);
     ImGui::Begin("Image", &open, window_flags);
     {
+        auto cd = std::filesystem::current_path();
+        ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
+
+        const FileRegistry& files = global::GetResourceUnwrapped("g_ImageFiles");
+        ImGui::Text("File Count: {%zu}", files.size());
+
+        int i = 0;
+        for (const auto& entry : files) {
+            ImGui::RadioButton(entry.generic_string().c_str(), &selected, i++);
+        }
+
+        const graphics::TextureRegistry& images = global::GetResourceUnwrapped("g_Images");
+        if (images.size() > 0) {
+            const auto& img = images.at(selected);
+            ImGui::Text("Size: {%zu}x{%zu}", img->GetWidth(), img->GetHeight());
+        }
+
         if (images.size() > 0) {
             //ImVec2 size(ImGui::GetContentRegionAvail());
             ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -157,42 +223,76 @@ void Base::OnUIRender() {
         }
     }
     ImGui::End();
-
-    
 }
 
-void Base::DoMainMenuBar() {
-    auto& style = ImGui::GetStyle();
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(style.FramePadding.x, 5 * style.FramePadding.y));
-    ImGui::BeginMainMenuBar();
-    ImGui::PopStyleVar();
-    if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
+void Base::DoWidgetPanel() {
+    auto coolbar_button = [](const char* label) -> bool {
+        float w = ImGui::GetCoolBarItemWidth();
+        auto font_ptr = (ImFont*)global::GetResourceUnwrapped("g_IconFont");
+        font_ptr->Scale = ImGui::GetCoolBarItemScale();
+        ImGui::PushFont(font_ptr);
+        bool res = ImGui::Button(label, ImVec2(w, w));
+        //ImGui::Text(label);
+        ImGui::PopFont();
+        return res;
+    };
+
+    float widget_panel_width = 0.0f;
+    if (ImGui::BeginCoolBar("##CoolBarMain", ImCoolBarFlags_Vertical, ImVec2(1.0f, 0.5f))) {
+        ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+        widget_panel_width = 40.0f;
+        if (ImGui::CoolBarItem()) {
+            widget_panel_width = 60.0f;
+
+            if (coolbar_button(ICON_FA_FOLDER_OPEN)) {
+
+            }
+        }
+        if (ImGui::CoolBarItem()) {
+            widget_panel_width = 60.0f;
+
+            if (coolbar_button(ICON_FA_IMAGES)) {
+
+            }
+        }
+        if (ImGui::CoolBarItem()) {
+            widget_panel_width = 60.0f;
+
+            if (coolbar_button(ICON_FA_CHART_SIMPLE)) {
+
+            }
+        }
+        if (ImGui::CoolBarItem()) {
+            widget_panel_width = 60.0f;
+
+            if (coolbar_button(ICON_FA_GEAR)) {
+
+            }
+        }
+        if (ImGui::CoolBarItem()) {
+            widget_panel_width = 60.0f;
+
+            if (coolbar_button(ICON_FA_SQUARE_XMARK)) {
+
+            }
+        }
+        
+        
+        ImGui::EndCoolBar();
     }
-    if (ImGui::BeginMenu("Edit")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("View")) {
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Project")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Window")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Help")) {
-        ImGui::EndMenu();
-    }
-    ImGui::EndMainMenuBar();
+    ImGuiID id = global::GetResourceUnwrapped("g_WidgetDock");
+    ImVec2 new_size = { widget_panel_width, ImGui::DockBuilderGetNode(id)->Size.y };
+    ImGui::DockBuilderSetNodeSize(id, new_size);
+
+    ImGuiWindowFlags window_flags = utils::GetBaseLayerWindowFlags();
+    ImGuiWindowClass wc;
+    wc.DockNodeFlagsOverrideSet = utils::GetNoDockingPanelDockNodeFlags() | ImGuiDockNodeFlags_NoResize;
+    ImGui::SetNextWindowClass(&wc);
+    static bool open = true;
+    ImVec2 zero_padded = {new_size.x * 2, new_size.y * 2};
+    ImGui::SetNextWindowSize(zero_padded);
+    ImGui::Begin("CoolBarPanel", &open, window_flags);
+    ImGui::End();
 }
 
 void Base::LoadImages() {
@@ -218,5 +318,34 @@ void Base::LoadImages() {
 
     global::AddResource("g_Images", std::move(images));
     global::AddResource("g_ImageFiles", std::move(image_files));
+}
+void Base::BuildDockspace() {
+    ImRect rect = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->GetBuildWorkRect();
+    ImVec2 pos = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->CalcWorkRectPos(((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->BuildWorkOffsetMin);
+    ImVec2 size{ (rect.Max.x - rect.Min.x) + 10.0f, rect.Max.y - rect.Min.y };
+
+    ImGuiID id = ImGui::GetID("DockSpace");
+    ImGui::DockBuilderRemoveNode(id);
+    ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_NoUndocking | ImGuiDockNodeFlags_NoResize);
+
+    auto& style = ImGui::GetStyle();
+    ImVec2 nodePos{ 0.f, 5 * style.FramePadding.y };
+
+    // Set the size and position:
+    ImGui::DockBuilderSetNodeSize(id, size);
+    ImGui::DockBuilderSetNodePos(id, pos);
+
+    ImGuiID dock3 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.10f , nullptr, &id);
+    ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.15f, nullptr, &id);
+    ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.75f, nullptr, &id);
+
+    ImGui::DockBuilderDockWindow("LandingPage", dock2);
+    ImGui::DockBuilderDockWindow("Dear ImGui Demo", dock2);
+    ImGui::DockBuilderDockWindow("Image", dock2);
+    ImGui::DockBuilderDockWindow("TableOfContents", dock1);
+    ImGui::DockBuilderDockWindow("CoolBarPanel", dock3);
+
+    global::AddResource("g_WidgetDock", dock3);
+    ImGui::DockBuilderFinish(id);
 }
 }

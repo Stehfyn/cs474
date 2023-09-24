@@ -19,7 +19,7 @@ if not exist external\nodejs\node.exe (
 
 rem cleanup
 if exist external\node-v18.17.1-x64.msi (
-    del /s /q /f external\node-v18.17.1-x64.msi
+    del /q /f external\node-v18.17.1-x64.msi
 )
 
 popd

@@ -14,3 +14,12 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb
+[submodule "external/IconFontCppHeaders"]
+	path = external/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders
+[submodule "external/ImTween"]
+	path = external/ImTween
+	url = https://github.com/Stehfyn/ImTween
+[submodule "external/ImCoolBar"]
+	path = external/ImCoolBar
+	url = https://github.com/Stehfyn/ImCoolBar

@@ -15,7 +15,14 @@ public:
 
 private:
 	void DoMainMenuBar();
+	void DoTableOfContents();
+	void DoLandingPage();
+	void DoImageTab();
+	void DoWidgetPanel();
+
+private:
 	void LoadImages();
+	void BuildDockspace();
 
 private:
 	int selected = 0;

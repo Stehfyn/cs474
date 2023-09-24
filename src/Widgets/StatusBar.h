@@ -7,6 +7,7 @@ static void DrawStatusBar() {
 
     if (ImGui::BeginViewportSideBar("##MainStatusBar", NULL, ImGuiDir_Down, height, window_flags)) {
         if (ImGui::BeginMenuBar()) {
+            ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
             float frame_time_ms = global::GetResourceUnwrapped("g_FrameTimeInMilliSeconds");
             float fps = global::GetResourceUnwrapped("g_FramesPerSecond");
 
