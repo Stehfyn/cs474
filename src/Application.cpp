@@ -3,6 +3,7 @@
 #include "Layer/Base.h"
 #include "Layer/Test.h"
 #include "Layer/AssignmentTest1.h"
+#include "Layer/AssignmentTest2.h"
 
 namespace cs474 {
 Application::Application(const ApplicationSpecification& spec)
@@ -15,6 +16,7 @@ Application::Application(const ApplicationSpecification& spec)
     PushLayer<Base>();
     PushLayer<Test>();
     PushLayer<AssignmentTest1>();
+    PushLayer<AssignmentTest2>();
 }
 
 Application::~Application() {
