@@ -52,6 +52,9 @@
 #include "Utils/imgui_helpers.hpp"
 
 #include "Widgets/StatusBar.h"
+
+#include "cs474.h"
+
 namespace cs474 {
 	using FileRegistry = std::vector<std::filesystem::path>;
 }
