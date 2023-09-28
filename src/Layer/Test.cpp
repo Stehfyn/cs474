@@ -14,6 +14,7 @@ void Test::OnUpdate(float ts) {
 }
 void Test::OnUIRender() {
     DoMarkdownTest();
+    fcns474lib();
 }
 void Test::DoMarkdownTest() {
     ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Dear ImGui Demo"));
