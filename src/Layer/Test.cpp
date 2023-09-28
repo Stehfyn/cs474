@@ -17,7 +17,7 @@ void Test::OnUIRender() {
     fcns474lib();
 }
 void Test::DoMarkdownTest() {
-    ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Dear ImGui Demo"));
+    //ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Dear ImGui Demo"));
     /*
     ImGui::Begin("TweenWindow");
     static float settingsButtonWidth = 52.0f;
