@@ -15,6 +15,7 @@
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
     <ClCompile Include="Graphics\Image.cpp" />
+    <ClCompile Include="Layer\AssignmentTest2.cpp" />
     <ClCompile Include="Layer\Test.cpp" />
     <ClCompile Include="Widgets\Markdown.cpp" />
     <ClCompile Include="Utils\js-helpers.cpp" />
@@ -32,6 +33,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Global\ResourceManager.hpp" />
     <ClInclude Include="Graphics\Image.h" />
+    <ClInclude Include="Layer\AssignmentTest2.h" />
     <ClInclude Include="Layer\Test.h" />
     <ClInclude Include="Widgets\Markdown.h" />
     <ClInclude Include="Widgets\StatusBar.h" />
