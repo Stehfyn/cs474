@@ -310,9 +310,10 @@ void Base::LoadImages() {
             if (image_data == NULL) {
                 emscripten_log(EM_LOG_CONSOLE, "didnt work lol");
             }
-
-            images.emplace_back(graphics::make_texture(image_data, image_width, image_height, 4));
-            stbi_image_free(image_data);
+            else {
+                images.emplace_back(graphics::make_texture(image_data, image_width, image_height, 4));
+                stbi_image_free(image_data);
+            }
         }
     }
 
