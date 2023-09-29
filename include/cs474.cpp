@@ -86,11 +86,12 @@ namespace cs474 {
 	}
 
 	std::vector<size_t> hist(const std::vector<uint8_t>& data) {
-		std::vector<size_t> hist(256, 0);
+		std::vector<size_t> hist(UINT8_MAX + 1, 0);
 		for (const auto& point : data) hist[point]++;
 		return hist;
 	}
 
+	// https://math.stackexchange.com/a/2021283
 	std::vector<size_t> cdf(const std::vector<size_t>& data) {
 		std::vector<size_t> _cdf(data.size());
 		std::partial_sum(data.begin(), data.end(), _cdf.begin());
@@ -101,14 +102,9 @@ namespace cs474 {
 		auto firstNonZeroIter = std::find_if(data.begin(), data.end(), [](size_t c) { return c > 0; });
 		size_t minCdfValue = (firstNonZeroIter != data.end()) ? *firstNonZeroIter : 0;
 
-		std::vector<uint8_t> norm(256);
-		for (int i = 0; i <= 255; ++i) {
-			if (total_pixels == minCdfValue) {
-				norm[i] = 0; // Prevent division by zero.
-			}
-			else {
-				norm[i] = static_cast<uint8_t>((data[i] - minCdfValue) * 255 / (total_pixels - minCdfValue));
-			}
+		std::vector<uint8_t> norm(UINT8_MAX + 1);
+		for (int i = 0; i < UINT8_MAX + 1; ++i) {
+			norm[i] = static_cast<uint8_t>((data[i] - minCdfValue) * UINT8_MAX / (total_pixels - minCdfValue));
 		}
 		return norm;
 	}
