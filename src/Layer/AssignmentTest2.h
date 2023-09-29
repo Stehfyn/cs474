@@ -12,8 +12,13 @@ namespace cs474 {
 		virtual void OnUpdate(float ts) override;
 		virtual void OnUIRender() override;
 
+	public:
+		void Question1();
+		void Question2();
 	private:
 		int factor = 1;
-		bool inspect = false;
+		bool inspect_sub = false;
+		int levels = (uint8_t)-1;
+		bool inspect_quant = false;
 	};
 }

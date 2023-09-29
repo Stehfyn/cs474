@@ -181,5 +181,8 @@ std::optional<Texture> ImageRegistry::GetTexture(const std::string& key, const s
 	}
 	return std::nullopt;
 }
+Texture ImageRegistry::GetTextureUnwrapped(const std::string& key, const std::string& sub_key) const {
+	return GetTexture(key, sub_key).value();
+}
 }
 }

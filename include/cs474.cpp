@@ -64,6 +64,24 @@ namespace cs474 {
 			}
 		}
 
-		return { scaledData };
+		return scaledData;
+	}
+
+	std::optional<std::vector<uint8_t>> quantize(const std::vector<uint8_t>& data, uint8_t levels, int width, int height) {
+		if (width != height)
+		{
+			return std::nullopt;
+		}
+
+		std::vector<uint8_t> quantized(width * height);
+		int bin_size = ((uint8_t)-1) / levels;
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				int bin = data[(y * width) + x] / bin_size;
+				quantized[(y * width) + x] = bin * bin_size;
+			}
+		}
+
+		return quantized;
 	}
 }
