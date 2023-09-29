@@ -33,10 +33,12 @@ namespace cs474 {
 		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
 
 		if (img_opt.has_value()) {
+			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
+			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
@@ -46,7 +48,9 @@ namespace cs474 {
 			if (sub_opt.has_value()) {
 				const auto& img_sub = sub_opt.value();
 				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect, {0.0f, 0.0f}, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect = false;
+				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
 			} else {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
@@ -55,7 +59,6 @@ namespace cs474 {
 			ImGui::SameLine();
 
 			//ImGui::Dummy(,)
-			const auto& style = ImGui::GetStyle();
 
 			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);

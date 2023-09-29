@@ -37,6 +37,7 @@
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Layer\AssignmentTest2.h" />
     <ClInclude Include="Layer\Test.h" />
+    <ClInclude Include="Widgets\ImageInspector.h" />
     <ClInclude Include="Widgets\Markdown.h" />
     <ClInclude Include="Widgets\StatusBar.h" />
     <ClInclude Include="Utils\atomic_mutex.hpp" />

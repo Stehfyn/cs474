@@ -14,5 +14,6 @@ namespace cs474 {
 
 	private:
 		int factor = 1;
+		bool inspect = false;
 	};
 }
