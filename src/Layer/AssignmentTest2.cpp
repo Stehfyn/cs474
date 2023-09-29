@@ -161,8 +161,9 @@ namespace cs474 {
 			ImGui::Separator();
 
 			static bool init_quant = true;
-			if (ImGui::Button("Quantize") || init_quant) {
-				auto quantized = quantize(rawData, levels, img->GetWidth(), img->GetHeight());
+
+			auto do_quantize = [&]() {
+				auto quantized = quantize(rawData, (uint8_t)levels, img->GetWidth(), img->GetHeight());
 				if (quantized.has_value()) {
 					auto data = quantized.value();
 					bool success = image_registry->AddTexture("lenna", "quant", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
@@ -171,6 +172,10 @@ namespace cs474 {
 				if (init_quant) {
 					init_quant = false;
 				}
+			};
+
+			if (ImGui::Button("Quantize") || init_quant) {
+				do_quantize();
 			}
 
 			//Creating a Combo menu for the factor choices
@@ -187,6 +192,7 @@ namespace cs474 {
 					{
 						item_current_idx = n;
 						this->levels = items[n];
+						do_quantize();
 					}
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 					if (is_selected)
@@ -194,6 +200,11 @@ namespace cs474 {
 				}
 				ImGui::EndCombo();
 			}
+
+			if (ImGui::SliderFloat("##Levels", &levels, 2.0f, (float)(uint8_t)-1, "%.0f")) {
+				do_quantize();
+			}
+			
 		}
 		ImGui::End();
 	}

@@ -18,7 +18,7 @@ namespace cs474 {
 	private:
 		int factor = 1;
 		bool inspect_sub = false;
-		int levels = (uint8_t)-1;
+		float levels = (uint8_t)-1;
 		bool inspect_quant = false;
 	};
 }
