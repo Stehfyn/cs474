@@ -13,6 +13,6 @@ namespace cs474 {
 		virtual void OnUIRender() override;
 
 	private:
-		int factor = 2;
+		int factor = 1;
 	};
 }

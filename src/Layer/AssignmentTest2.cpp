@@ -64,7 +64,8 @@ namespace cs474 {
 
 			ImGui::Separator();
 
-			if (ImGui::Button("Sub sample")) {
+			static bool init_sample = true;
+			if (ImGui::Button("Sub sample") || init_sample) {
 				auto subsampled = subSample(rawData, factor, img->GetWidth(), img->GetHeight());
 				if (subsampled.has_value()) {
 					auto data = subsampled.value();
@@ -75,13 +76,13 @@ namespace cs474 {
 						emscripten_log(EM_LOG_CONSOLE, "%d", success);
 					}
 				}
-
-				// do sub samplig calculation
-				// make the texture like how we did in loadimage()
+				if (init_sample) {
+					init_sample = false;
+				}
 			}
 
 			//Creating a Combo menu for the factor choices
-			int items[] = { 2,4,8 };
+			int items[] = { 1,2,4,8 };
 			static int item_current_idx = 0;
 			ImGui::SetNextItemWidth(100);
 			if (ImGui::BeginCombo("Factor", std::to_string(items[item_current_idx]).c_str()))
