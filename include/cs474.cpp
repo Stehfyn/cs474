@@ -3,6 +3,67 @@
 //
 
 // TODO: This is an example of a library function
-void fcns474lib()
-{
+
+namespace cs474 {
+	void fcns474lib()
+	{
+
+	}
+
+
+	std::optional<std::vector<uint8_t>> subSample(const std::vector<uint8_t>& rawData, int factor, int width, int height)
+	{
+		if (width != height)
+		{
+			return std::nullopt;
+		}
+		if ((width / factor) % 2 != 0)
+		{
+			return std::nullopt;
+		}
+		int newWidth = width / factor;
+		int newHeight = height / factor;
+		std::vector<uint8_t> subsampleData(newWidth * newHeight);
+
+		for (int y = 0; y < newHeight; ++y)
+		{
+			for (int x = 0; x < newWidth; ++x)
+			{
+				int subIndex = (y * factor * width) + (x * factor);
+				subsampleData[(y * newWidth) + x] = rawData[subIndex];
+			}
+		}
+		return subsampleData;
+	}
+
+
+	std::optional<std::vector<uint8_t>> scale(const std::vector<uint8_t>& subsampleData, int factor, int width, int height)
+	{
+		if (width != height)
+		{
+			return std::nullopt;
+		}
+		if ((width / factor) % 2 != 0)
+		{
+			return std::nullopt;
+		}
+
+		int scaledWidth = width * factor;
+		int scaledHeight = height * factor;
+
+		std::vector<uint8_t> scaledData(scaledWidth * scaledHeight);
+
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				uint8_t value = subsampleData[y * width + x];
+				for (int sy = 0; sy < factor; ++sy) {
+					for (int sx = 0; sx < factor; ++sx) {
+						scaledData[(y * factor + sy) * scaledWidth + (x * factor + sx)] = value;
+					}
+				}
+			}
+		}
+
+		return { scaledData };
+	}
 }

@@ -109,6 +109,5 @@ static const Resource& GetResourceUnwrapped(const std::string& name) {
 static Resource& GetResourceMutUnwrapped(const std::string& name) {
     return GetResourceMut(name).value();
 }
-
 }
 }

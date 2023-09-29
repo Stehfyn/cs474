@@ -107,9 +107,16 @@ bool ImageRegistry::AddTexture(const std::string& key, const std::string& sub_ke
 		if (file_list.empty())
 			return false; // false if file_list is empty (somehow)
 
-		auto& texture_registry = it->second.second; 
-		auto result = texture_registry.emplace(sub_key, tex); 
-		return result.second; // result.second is true if insertion is successful, false if sub_key already exists
+		auto& texture_map = it->second.second;
+
+		auto tit = texture_map.find(sub_key);
+		if (tit != texture_map.end()) {
+			tit->second = tex;
+			return true;
+		} else {
+			auto result = texture_map.emplace(sub_key, tex);
+            return result.second; // result.second is true if insertion is successful, false if sub_key already exists
+		}
 	}
 
 	return false; // Return false if key does not exist in the registry

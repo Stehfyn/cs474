@@ -171,15 +171,15 @@ void Base::DoImageTab() {
         auto cd = std::filesystem::current_path();
         ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
 
-        const graphics::ImageRegistry& image_registry = global::GetResourceUnwrapped("g_ImageRegistry");
+        std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceUnwrapped("g_ImageRegistry");
         int i = 0;
-        for (const auto& key : image_registry.GetKeys()) {
-            image_registry.GetFileList(key);
+        for (const auto& key : image_registry->GetKeys()) {
+            image_registry->GetFileList(key);
             if (ImGui::RadioButton(key.c_str(), &selected, i++)) {
                 img_key = key;
             }
         }
-        const std::optional<graphics::Texture>& img_opt = image_registry.GetTexture(img_key, ".pgm");
+        const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(img_key, ".pgm");
 
         if (img_opt.has_value()) {
             const auto& img = img_opt.value();
@@ -296,18 +296,18 @@ void Base::LoadImages() {
     const utils::FileList files = utils::Traverse("/assets", "*.gif *.pgm");
     const std::unordered_map<std::filesystem::path, utils::FileList> stem_map = utils::SortByStem(files);
 
-    graphics::ImageRegistry image_registry;
+    std::shared_ptr<graphics::ImageRegistry> image_registry = std::make_shared<graphics::ImageRegistry>();
 
     // add list of image files to registry
     for (const auto& kv : stem_map) {
         emscripten_log(EM_LOG_CONSOLE, "Stem: %s {%zu}", kv.first.c_str(), kv.second.size());
-        image_registry.AddFileList(kv.first, kv.second);
+        image_registry->AddFileList(kv.first, kv.second);
         for (const auto& path : kv.second) {
             emscripten_log(EM_LOG_CONSOLE, "- %s", path.c_str());
         }
     }
     
-    image_registry.LoadDefaultTexturesFromFileList();
+    image_registry->LoadDefaultTexturesFromFileList();
     global::AddResource("g_ImageRegistry", std::move(image_registry));
 
     utils::FileList image_files = utils::Traverse("/assets", "*.gif *.pgm");
