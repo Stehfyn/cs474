@@ -3,7 +3,7 @@ namespace cs474 {
 namespace global {
 class Resource {
 public:
-	Resource() = default;
+    Resource() = default;
     Resource(std::any value) : m_Value(std::move(value)) {}
 
 public:

@@ -2,6 +2,8 @@
 #include "detail/io-detail.h"
 namespace cs474 {
 namespace utils {
+using FileList = std::vector<std::filesystem::path>;
+
 static std::optional<std::vector<char>> SlurpFile(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize file_size = file.tellg();
@@ -31,10 +33,27 @@ enum Depth {
     Max = (size_t)-1,
 };
 
-static std::vector<std::filesystem::path> Traverse(const std::filesystem::path& dir, 
+static FileList Traverse(const std::filesystem::path& dir, 
     const char* pattern = "*", size_t depth = Depth::Max) {
     auto search_set = detail::parse_search_pattern(pattern);
     return detail::traverse_impl(dir, search_set, depth);
+}
+
+static std::unordered_map<std::filesystem::path, FileList> SortByStem(const std::vector<std::filesystem::path>& paths,
+    bool include_dirs = false) {
+    std::unordered_map<std::filesystem::path, FileList> sorted;
+    for (const auto& path : paths) {
+        if (path.has_stem() && 
+            (include_dirs == std::filesystem::is_directory(path))) {
+            auto it = sorted.find(path.stem());
+            if (it != sorted.end()) {
+                it->second.push_back(path);
+            } else {
+                sorted.insert({ path.stem(), { path } });
+            }
+        }
+    }
+    return sorted;
 }
 
 template <typename T> //https://stackoverflow.com/a/16606128
@@ -46,4 +65,4 @@ static std::string ToStringWithPrecision(const T a_value, const int n = 6)
     return std::move(out).str();
 }
 }
-}
+} // namespace cs474

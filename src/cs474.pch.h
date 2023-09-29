@@ -10,12 +10,16 @@
 #include <optional>
 #include <vector>
 #include <sstream>
+#include <tuple>
 #include <unordered_set>
+#include <unordered_map>
 #include <map>
 #include <any>
 #include <mutex>
 #include <utility>
 #include <typeindex>
+#include <functional>
+#include <variant>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -54,7 +58,3 @@
 #include "Widgets/StatusBar.h"
 
 #include "cs474.h"
-
-namespace cs474 {
-	using FileRegistry = std::vector<std::filesystem::path>;
-}
