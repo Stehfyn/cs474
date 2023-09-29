@@ -171,29 +171,26 @@ void Base::DoImageTab() {
         auto cd = std::filesystem::current_path();
         ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
 
-        const FileRegistry& files = global::GetResourceUnwrapped("g_ImageFiles");
-        ImGui::Text("File Count: {%zu}", files.size());
-
+        const graphics::ImageRegistry& image_registry = global::GetResourceUnwrapped("g_ImageRegistry");
         int i = 0;
-        for (const auto& entry : files) {
-            ImGui::RadioButton(entry.generic_string().c_str(), &selected, i++);
+        for (const auto& key : image_registry.GetKeys()) {
+            image_registry.GetFileList(key);
+            if (ImGui::RadioButton(key.c_str(), &selected, i++)) {
+                img_key = key;
+            }
         }
+        const std::optional<graphics::Texture>& img_opt = image_registry.GetTexture(img_key, ".pgm");
 
-        const graphics::TextureRegistry& images = global::GetResourceUnwrapped("g_Images");
-        if (images.size() > 0) {
-            const auto& img = images.at(selected);
+        if (img_opt.has_value()) {
+            const auto& img = img_opt.value();
             ImGui::Text("Size: {%zu}x{%zu}", img->GetWidth(), img->GetHeight());
-        }
 
-        if (images.size() > 0) {
-            //ImVec2 size(ImGui::GetContentRegionAvail());
             ImVec2 pos = ImGui::GetCursorScreenPos();
             ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
             ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
             ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
             ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
 
-            const auto& img = images.at(selected);
             ImVec2 size{ (float)img->GetWidth(), (float)img->GetHeight() };
 
             ImGui::Image((void*)(intptr_t)(img->GetRendererID()), size);
@@ -296,29 +293,27 @@ void Base::DoWidgetPanel() {
 }
 
 void Base::LoadImages() {
-    FileRegistry image_files = utils::Traverse("/assets", "*.gif *.jpg *.png");
+    const utils::FileList files = utils::Traverse("/assets", "*.gif *.pgm");
+    const std::unordered_map<std::filesystem::path, utils::FileList> stem_map = utils::SortByStem(files);
 
-    graphics::TextureRegistry images;
-    for (const auto& file : image_files) {
-        int image_width = 0;
-        int image_height = 0;
+    graphics::ImageRegistry image_registry;
 
-        const auto& data = utils::SlurpFile(file);
-        if (data.has_value()) {
-            unsigned char* image_data = stbi_load_from_memory((unsigned char*)data.value().data(), data.value().size(), &image_width, &image_height, NULL, 4);
-
-            if (image_data == NULL) {
-                emscripten_log(EM_LOG_CONSOLE, "didnt work lol");
-            }
-
-            images.emplace_back(graphics::make_texture(image_data, image_width, image_height, 4));
-            stbi_image_free(image_data);
+    // add list of image files to registry
+    for (const auto& kv : stem_map) {
+        emscripten_log(EM_LOG_CONSOLE, "Stem: %s {%zu}", kv.first.c_str(), kv.second.size());
+        image_registry.AddFileList(kv.first, kv.second);
+        for (const auto& path : kv.second) {
+            emscripten_log(EM_LOG_CONSOLE, "- %s", path.c_str());
         }
     }
+    
+    image_registry.LoadDefaultTexturesFromFileList();
+    global::AddResource("g_ImageRegistry", std::move(image_registry));
 
-    global::AddResource("g_Images", std::move(images));
+    utils::FileList image_files = utils::Traverse("/assets", "*.gif *.pgm");
     global::AddResource("g_ImageFiles", std::move(image_files));
 }
+
 void Base::BuildDockspace() {
     ImRect rect = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->GetBuildWorkRect();
     ImVec2 pos = ((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->CalcWorkRectPos(((ImGuiViewportP*)(void*)ImGui::GetMainViewport())->BuildWorkOffsetMin);

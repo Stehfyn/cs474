@@ -65,5 +65,12 @@ static std::vector<std::filesystem::path> traverse_impl(const std::filesystem::p
     return paths;
 }
 }
-}
-}
+} // namespace detail
+} // namespace cs474
+namespace std {
+    template <> struct hash<std::filesystem::path> {
+        size_t operator()(const std::filesystem::path& path) const {
+            return std::hash<std::string>{}(path.generic_string());
+        }
+    };
+} //namespace std
