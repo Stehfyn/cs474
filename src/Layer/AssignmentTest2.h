@@ -15,10 +15,13 @@ namespace cs474 {
 	public:
 		void Question1();
 		void Question2();
+		void Question3();
+
 	private:
 		int factor = 1;
 		bool inspect_sub = false;
 		float levels = (uint8_t)-1;
 		bool inspect_quant = false;
+		bool inspect_eq = false;
 	};
 }

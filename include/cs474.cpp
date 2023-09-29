@@ -33,7 +33,7 @@ namespace cs474 {
 				subsampleData[(y * newWidth) + x] = rawData[subIndex];
 			}
 		}
-		return subsampleData;
+		return { subsampleData };
 	}
 
 
@@ -64,7 +64,7 @@ namespace cs474 {
 			}
 		}
 
-		return scaledData;
+		return { scaledData };
 	}
 
 	std::optional<std::vector<uint8_t>> quantize(const std::vector<uint8_t>& data, uint8_t levels, int width, int height) {
@@ -82,6 +82,47 @@ namespace cs474 {
 			}
 		}
 
-		return quantized;
+		return { quantized };
+	}
+
+	std::vector<size_t> hist(const std::vector<uint8_t>& data) {
+		std::vector<size_t> hist(256, 0);
+		for (const auto& point : data) hist[point]++;
+		return hist;
+	}
+
+	std::vector<size_t> cdf(const std::vector<size_t>& data) {
+		std::vector<size_t> _cdf(data.size());
+		std::partial_sum(data.begin(), data.end(), _cdf.begin());
+		return _cdf;
+	}
+
+	std::vector<uint8_t> norm(const std::vector<size_t>& data, int total_pixels) {
+		auto firstNonZeroIter = std::find_if(data.begin(), data.end(), [](size_t c) { return c > 0; });
+		size_t minCdfValue = (firstNonZeroIter != data.end()) ? *firstNonZeroIter : 0;
+
+		std::vector<uint8_t> norm(256);
+		for (int i = 0; i <= 255; ++i) {
+			if (total_pixels == minCdfValue) {
+				norm[i] = 0; // Prevent division by zero.
+			}
+			else {
+				norm[i] = static_cast<uint8_t>((data[i] - minCdfValue) * 255 / (total_pixels - minCdfValue));
+			}
+		}
+		return norm;
+	}
+
+	std::vector<uint8_t> hist_eq(const std::vector<uint8_t>& data, int width, int height) {
+		auto _hist = hist(data);
+		auto _cdf = cdf(_hist);
+		auto _norm = norm(_cdf, width * height);
+
+		std::vector<uint8_t> equalized(width * height);
+		for (int i = 0; i < width * height; ++i) {
+			equalized[i] = _norm[data[i]];
+		}
+
+		return equalized;
 	}
 }

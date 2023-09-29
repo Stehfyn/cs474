@@ -20,6 +20,7 @@ namespace cs474 {
 	void AssignmentTest2::OnUIRender() {
 		this->Question1();
 		this->Question2();
+		this->Question3();
 	}
 	void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
@@ -27,7 +28,7 @@ namespace cs474 {
 		ImVec2 size = { 640, 480 };
 		ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200, 400 };
+		ImVec2 pos = { 200, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
 		ImGui::Begin("Question1");
@@ -117,7 +118,7 @@ namespace cs474 {
 		ImVec2 size = { 640, 480 };
 		ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200 + 640, 400 };
+		ImVec2 pos = { 200 + 640, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
 		ImGui::Begin("Question2");
@@ -205,6 +206,56 @@ namespace cs474 {
 				do_quantize();
 			}
 			
+		}
+		ImGui::End();
+	}
+	void AssignmentTest2::Question3() {
+		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question3"));
+
+		ImVec2 size = { 640, 480 };
+		ImGui::SetNextWindowSize(size);
+
+		ImVec2 pos = { 200, 480 };
+		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+
+		ImGui::Begin("Question3");
+		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
+		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("f_16", ".pgm");
+
+		if (img_opt.has_value()) {
+			const auto& style = ImGui::GetStyle();
+			const auto& img = img_opt.value();
+			const std::vector<uint8_t>& rawData = img->GetRawData();
+			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
+			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
+			bool is_hovered1 = widgets::ImageInspector("inspect5", img, &inspect_eq, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			ImGui::SameLine();
+
+			// Computed image
+
+			const std::optional<graphics::Texture>& eq_opt = image_registry->GetTexture("f_16", "eq");
+
+			if (eq_opt.has_value()) {
+				const auto& img_eq = eq_opt.value();
+				ImVec2 img_eq_size{ (float)img_eq->GetWidth(), (float)img_eq->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect6", img_eq, &inspect_eq, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_eq->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_eq = false;
+				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+			}
+			else {
+				auto equalized = hist_eq(rawData, img->GetWidth(), img->GetHeight());
+				bool success = image_registry->AddTexture("f_16", "eq", graphics::make_texture(equalized, img->GetWidth(), img->GetHeight(), 1));
+			}
+
+			ImGui::Text("Original: ");
+			ImGui::SameLine();
+
+			//ImGui::Dummy(,)
+
+			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
+			ImGui::Text("Equalized: ");
+
 		}
 		ImGui::End();
 	}
