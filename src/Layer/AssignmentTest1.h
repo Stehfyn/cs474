@@ -12,11 +12,5 @@ namespace cs474 {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(float ts) override;
 		virtual void OnUIRender() override;
-
-	public:
-		void LoadImages();
-
-	private:
-		graphics::TextureRegistry images;
 	};
 }
