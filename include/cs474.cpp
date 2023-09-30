@@ -85,14 +85,14 @@ namespace cs474 {
 		return { quantized };
 	}
 
-	std::vector<size_t> hist(const std::vector<uint8_t>& data) {
-		std::vector<size_t> hist(UINT8_MAX + 1, 0);
+	std::vector<float> hist(const std::vector<uint8_t>& data) {
+		std::vector<float> hist(UINT8_MAX + 1, 0);
 		for (const auto& point : data) hist[point]++;
 		return hist;
 	}
 
 	// https://math.stackexchange.com/a/2021283
-	std::vector<size_t> cdf(const std::vector<size_t>& data) {
+	std::vector<size_t> cdf(const std::vector<float>& data) {
 		std::vector<size_t> _cdf(data.size());
 		std::partial_sum(data.begin(), data.end(), _cdf.begin());
 		return _cdf;
@@ -120,5 +120,36 @@ namespace cs474 {
 		}
 
 		return equalized;
+	}
+
+	std::optional<std::vector<uint8_t>> hist_spec(const std::vector<uint8_t>& srcData, const std::vector<uint8_t>& specData, int width, int height) {
+		// Step 1: Equalize the histogram of the source image
+		auto srcEqualized = hist_eq(srcData, width, height);
+		auto specifiedHist = hist(specData);
+
+		// Step 2: Equalize the specified histogram to obtain the mapping
+		std::vector<size_t> specCdf = cdf(specifiedHist);
+		std::vector<uint8_t> specNorm = norm(specCdf, std::accumulate(specifiedHist.begin(), specifiedHist.end(), 0));
+
+		// Step 3: Apply the mapping to the uniformly equalized source image
+		std::vector<uint8_t> specifiedData(width * height);
+		for (int i = 0; i < width * height; ++i) {
+			uint8_t srcValue = srcEqualized[i];
+			uint8_t mappedValue = 0;
+			size_t minDiff = SIZE_MAX;  // Initialize to maximum possible value
+        
+			// Search for the closest value in the specified histogram
+			for (size_t j = 0; j <= UINT8_MAX; ++j) {
+				size_t diff = std::abs(static_cast<int>(srcValue) - static_cast<int>(specNorm[j]));
+				if (diff < minDiff) {
+					minDiff = diff;
+					mappedValue = static_cast<uint8_t>(j);
+				}
+			}
+        
+			specifiedData[i] = mappedValue;
+		}
+
+		return { specifiedData };
 	}
 }

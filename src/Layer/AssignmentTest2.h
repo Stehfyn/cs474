@@ -16,6 +16,7 @@ namespace cs474 {
 		void Question1();
 		void Question2();
 		void Question3();
+		void Question4();
 
 	private:
 		int factor = 1;
@@ -23,5 +24,8 @@ namespace cs474 {
 		float levels = (uint8_t)-1;
 		bool inspect_quant = false;
 		bool inspect_eq = false;
+		const char* spechistoChoice = "boat";
+		const char* imageChoice = "boat";
+		//std::vector<uint8_t> specImageData;
 	};
 }
