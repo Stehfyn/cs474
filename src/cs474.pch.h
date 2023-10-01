@@ -55,6 +55,10 @@
 
 #include "Utils/imgui_helpers.hpp"
 
+#include "Graphics/Image.h"
+
 #include "Widgets/StatusBar.h"
+#include "Widgets/ImageInspector.h"
+#include "Widgets/Markdown.h"
 
 #include "cs474.h"

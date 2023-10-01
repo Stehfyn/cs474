@@ -62,6 +62,7 @@ public:
 	std::vector<std::string> GetKeys() const;
 	std::optional<utils::FileList> GetFileList(const std::string& key) const;
 	std::optional<Texture> GetTexture(const std::string& key, const std::string& sub_key) const;
+	Texture GetTextureUnwrapped(const std::string& key, const std::string& sub_key) const;
 
 private:
 	std::unordered_map<std::string, ImageData> m_Registry;

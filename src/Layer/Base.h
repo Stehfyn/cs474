@@ -14,10 +14,8 @@ public:
 	virtual void OnUIRender() override;
 
 private:
-	void DoMainMenuBar();
 	void DoTableOfContents();
 	void DoLandingPage();
-	void DoImageTab();
 	void DoWidgetPanel();
 
 private:

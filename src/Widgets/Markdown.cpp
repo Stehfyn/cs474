@@ -31,21 +31,21 @@ ImFont* Markdown::get_font() const
 	ImFont* default_font = ImGui::GetDefaultFont();
 	if (m_is_table_header) {
 		//return g_font_bold;
-		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_18.0");
+		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_23.0");
 	}
 
 	switch (m_hlevel)
 	{
 	case 0:
 		//return m_is_strong ? g_font_bold : g_font_regular;
-		return m_is_strong ? (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_18.0") :
-			(ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Light_18.0");
+		return m_is_strong ? (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_23.0") :
+			(ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Light_23.0");
 	case 1:
 		//return g_font_bold_large;
-		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_23.0");
+		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_26.0");
 	default:
 		//return g_font_bold;
-		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_18.0");
+		return (ImFont*)global::GetResourceUnwrapped("g_MyriadPro-Semibold_23.0");
 	}
 }
 void Markdown::open_url() const
@@ -81,6 +81,8 @@ void markdown(const std::string& string)
 	static Markdown s_printer;
 	const char* start = string.c_str();
 	const char* end = start + string.size();
+
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetFontSize() - ImGui::GetStyle().FramePadding.y);
 	s_printer.print(start, end);
 }
 }
