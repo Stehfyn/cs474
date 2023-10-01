@@ -36,7 +36,6 @@ namespace cs474 {
 		return { subsampleData };
 	}
 
-
 	std::optional<std::vector<uint8_t>> scale(const std::vector<uint8_t>& subsampleData, int factor, int width, int height)
 	{
 		if (width != height)
@@ -74,10 +73,11 @@ namespace cs474 {
 		}
 
 		std::vector<uint8_t> quantized(width * height);
-		int bin_size = ((uint8_t)-1) / levels;
+		int bin_size = UINT8_MAX / levels;
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < width; ++x) {
 				int bin = data[(y * width) + x] / bin_size;
+				if (bin == levels) bin -= 1; // force into lower bin 
 				quantized[(y * width) + x] = bin * bin_size;
 			}
 		}
@@ -92,20 +92,21 @@ namespace cs474 {
 	}
 
 	// https://math.stackexchange.com/a/2021283
-	std::vector<size_t> cdf(const std::vector<float>& data) {
-		std::vector<size_t> _cdf(data.size());
+	std::vector<float> cdf(const std::vector<float>& data) {
+		std::vector<float> _cdf(data.size());
 		std::partial_sum(data.begin(), data.end(), _cdf.begin());
 		return _cdf;
 	}
 
-	std::vector<uint8_t> norm(const std::vector<size_t>& data, int total_pixels) {
-		auto firstNonZeroIter = std::find_if(data.begin(), data.end(), [](size_t c) { return c > 0; });
-		size_t minCdfValue = (firstNonZeroIter != data.end()) ? *firstNonZeroIter : 0;
+	std::vector<uint8_t> norm(const std::vector<float>& data, int total_pixels) {
+		auto firstNonZeroIter = std::find_if(data.begin(), data.end(), [](float c) { return c > 0; });
+		float minCdfValue = (firstNonZeroIter != data.end()) ? *firstNonZeroIter : 0;
 
 		std::vector<uint8_t> norm(UINT8_MAX + 1);
 		for (int i = 0; i < UINT8_MAX + 1; ++i) {
 			norm[i] = static_cast<uint8_t>((data[i] - minCdfValue) * UINT8_MAX / (total_pixels - minCdfValue));
 		}
+		
 		return norm;
 	}
 
@@ -128,7 +129,7 @@ namespace cs474 {
 		auto specifiedHist = hist(specData);
 
 		// Step 2: Equalize the specified histogram to obtain the mapping
-		std::vector<size_t> specCdf = cdf(specifiedHist);
+		std::vector<float> specCdf = cdf(specifiedHist);
 		std::vector<uint8_t> specNorm = norm(specCdf, std::accumulate(specifiedHist.begin(), specifiedHist.end(), 0));
 
 		// Step 3: Apply the mapping to the uniformly equalized source image
@@ -152,4 +153,4 @@ namespace cs474 {
 
 		return { specifiedData };
 	}
-}
+} // namespace cs474

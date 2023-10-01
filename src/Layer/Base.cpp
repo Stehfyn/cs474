@@ -8,6 +8,8 @@ Base::~Base() {
 }
 void Base::OnAttach() {
     this->LoadImages();
+
+    global::AddResource("g_ShowAssignment1", false);
 }
 void Base::OnDetach() {
 }
@@ -16,58 +18,22 @@ void Base::OnUpdate(float ts) {
     global::UpdateResource("g_FramesPerSecond", 1.0f / ts);
 }
 void Base::OnUIRender() {
-    //this->DoMainMenuBar();
+    widgets::DrawStatusBar();
 
     if (global::GetResourceUnwrapped("g_FirstFrame")) {
-    //if (true) {
         this->BuildDockspace();
     }
     
     this->DoTableOfContents();
     this->DoLandingPage();
-    this->DoImageTab();
-    this->DoWidgetPanel();
+    //this->DoWidgetPanel();
 
     if (global::GetResourceUnwrapped("g_FirstFrame")) {
         ImGui::SetWindowFocus("LandingPage");
     }
 
-    widgets::DrawStatusBar();
 }
 
-void Base::DoMainMenuBar() {
-    auto& style = ImGui::GetStyle();
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(style.FramePadding.x, 5 * style.FramePadding.y));
-    ImGui::BeginMainMenuBar();
-    ImGui::PopStyleVar();
-    if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Edit")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("View")) {
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Project")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Window")) {
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Create");
-        ImGui::EndMenu();
-    }
-    if (ImGui::BeginMenu("Help")) {
-        ImGui::EndMenu();
-    }
-    ImGui::EndMainMenuBar();
-}
 void Base::DoTableOfContents() {
     static bool open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar;
@@ -84,13 +50,26 @@ void Base::DoTableOfContents() {
             ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         }
 
-        if (ImGui::CollapsingHeader("Assignments")) {
-            widgets::markdown(R"(## Assignment 1
-&nbsp; 1. [Image Sampling](#example)<br>
-&nbsp; 2. [Image Quantization](#example)<br>
-&nbsp; 3. [Histogram Equalization](#example)<br>
-&nbsp; 4. [Histogram Specification](#example)<br>
-)");
+        static std::vector<std::string> headers = { "Sampling", "Quantization", "Histogram Equalization", "Histogram Specification" };
+        if (ImGui::TreeNode("Programming Assignments")) {
+            if (global::GetResourceUnwrapped("g_FirstFrame")) {
+                ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+            }
+            if (ImGui::TreeNode("Assignment 1")) {
+                static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+                static int selected = -1;
+                for (int i = 0; i < 4; ++i) {
+                    ImGuiTreeNodeFlags node_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
+                    if (i == selected) node_flags |= ImGuiTreeNodeFlags_Selected;
+                    ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "%d. %s", i + 1, (headers[i]).c_str());
+                    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+                        selected = i;
+                        global::UpdateResource("g_ShowAssignment1", true);
+                    }
+                }
+                ImGui::TreePop();
+            }
+            ImGui::TreePop();
         }
     }
     ImGui::End();
@@ -157,68 +136,6 @@ python3 -m http.server 8080
 ```
 Then launch any browser and navigate to `localhost:8080/index.html`, and voila!
 )");
-    ImGui::End();
-}
-
-void Base::DoImageTab() {
-    ImGuiWindowFlags window_flags = utils::GetBaseLayerWindowFlags();
-    static bool open = true;
-    ImGuiWindowClass wc;
-    wc.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize;
-    ImGui::SetNextWindowClass(&wc);
-    ImGui::Begin("Image", &open, window_flags);
-    {
-        auto cd = std::filesystem::current_path();
-        ImGui::Text("Current Path: {%s}", cd.generic_string().c_str());
-
-        std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceUnwrapped("g_ImageRegistry");
-        int i = 0;
-        for (const auto& key : image_registry->GetKeys()) {
-            image_registry->GetFileList(key);
-            if (ImGui::RadioButton(key.c_str(), &selected, i++)) {
-                img_key = key;
-            }
-        }
-        const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(img_key, ".pgm");
-
-        if (img_opt.has_value()) {
-            const auto& img = img_opt.value();
-            ImGui::Text("Size: {%zu}x{%zu}", img->GetWidth(), img->GetHeight());
-
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-            ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-            ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-            ImVec4 border_col = ImGui::GetStyleColorVec4(ImGuiCol_Border);
-
-            ImVec2 size{ (float)img->GetWidth(), (float)img->GetHeight() };
-
-            ImGui::Image((void*)(intptr_t)(img->GetRendererID()), size);
-            if (ImGui::IsItemHovered() && ImGui::BeginTooltip())
-            {
-                auto& io = ImGui::GetIO();
-                float my_tex_w = size.x;
-                //float my_tex_w = img->GetWidth();
-                float my_tex_h = size.y;
-                //float my_tex_h = img->GetHeight();
-
-                float region_sz = 32.0f;
-                float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
-                float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
-                float zoom = 4.0f;
-                if (region_x < 0.0f) { region_x = 0.0f; }
-                else if (region_x > my_tex_w - region_sz) { region_x = my_tex_w - region_sz; }
-                if (region_y < 0.0f) { region_y = 0.0f; }
-                else if (region_y > my_tex_h - region_sz) { region_y = my_tex_h - region_sz; }
-                ImGui::Text("Min: (%.2f, %.2f)", region_x, region_y);
-                ImGui::Text("Max: (%.2f, %.2f)", region_x + region_sz, region_y + region_sz);
-                ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
-                ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
-                ImGui::Image((void*)(intptr_t)img->GetRendererID(), ImVec2(region_sz * zoom, region_sz * zoom), uv0, uv1, tint_col, border_col);
-                ImGui::EndTooltip();
-            }
-        }
-    }
     ImGui::End();
 }
 
@@ -320,27 +237,33 @@ void Base::BuildDockspace() {
     ImVec2 size{ (rect.Max.x - rect.Min.x) + 10.0f, rect.Max.y - rect.Min.y };
 
     ImGuiID id = ImGui::GetID("DockSpace");
-    ImGui::DockBuilderRemoveNode(id);
-    ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_NoUndocking | ImGuiDockNodeFlags_NoResize);
+
+    //ImGui::DockBuilderRemoveNode(id);
 
     auto& style = ImGui::GetStyle();
     ImVec2 nodePos{ 0.f, 5 * style.FramePadding.y };
 
+    id = global::GetResourceUnwrapped("g_DockspaceOverViewport");
+    //id = ImGui::DockBuilderAddNode(id, ImGuiDockNodeFlags_NoResize | ImGuiDockNodeFlags_NoUndocking | ImGuiDockNodeFlags_PassthruCentralNode ImGuiDockNodeFlags_);
     // Set the size and position:
     ImGui::DockBuilderSetNodeSize(id, size);
     ImGui::DockBuilderSetNodePos(id, pos);
 
-    ImGuiID dock3 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.10f , nullptr, &id);
-    ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.15f, nullptr, &id);
-    ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.75f, nullptr, &id);
+    ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.15f , nullptr, &id);
+    //ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 1.0f, nullptr, &id);
+    //ImGuiID dock3 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.15f, nullptr, &id);
 
-    ImGui::DockBuilderDockWindow("LandingPage", dock2);
+    ImGui::DockBuilderDockWindow("TableOfContents", dock1);
+    ImGui::DockBuilderDockWindow("LandingPage", id);
+    ImGui::DockBuilderDockWindow("Assignment 1", id);
+
+    /*
     ImGui::DockBuilderDockWindow("Dear ImGui Demo", dock2);
     ImGui::DockBuilderDockWindow("Image", dock2);
     ImGui::DockBuilderDockWindow("TableOfContents", dock1);
     ImGui::DockBuilderDockWindow("CoolBarPanel", dock3);
-
-    global::AddResource("g_WidgetDock", dock3);
+    */
+    //global::AddResource("g_WidgetDock", dock3);
     ImGui::DockBuilderFinish(id);
 }
 }

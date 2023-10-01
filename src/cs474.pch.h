@@ -59,5 +59,6 @@
 
 #include "Widgets/StatusBar.h"
 #include "Widgets/ImageInspector.h"
+#include "Widgets/Markdown.h"
 
 #include "cs474.h"

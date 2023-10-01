@@ -12,7 +12,11 @@ static bool ImageInspector(const char* id, const cs474::graphics::Texture& img, 
     ImVec2 size{ (float)img->GetWidth(), (float)img->GetHeight() };
 
     ImGui::Image((void*)(intptr_t)(img->GetRendererID()), size);
-    bool is_hovered = ImGui::IsItemHovered();
+    auto& io = ImGui::GetIO();
+
+    // This is_hovered replacement works ... why does IsHovered() not?
+    ImRect img_rect({ pos.x, pos.y }, {pos.x + size.x, pos.y + size.y});
+    bool is_hovered = img_rect.Contains(io.MousePos) && ImGui::IsWindowFocused() && !io.MouseDown[ImGuiMouseButton_Left];
 
     if ((*inspect || is_hovered))
     {
@@ -23,7 +27,7 @@ static bool ImageInspector(const char* id, const cs474::graphics::Texture& img, 
         else {
             offset = not_hovered_inspect_offset;
         }
-        auto& io = ImGui::GetIO();
+        
         ImGui::SetNextWindowPos({ offset.x + io.MousePos.x, offset.y + io.MousePos.y });
         ImGui::Begin(id, NULL, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar);
         float my_tex_w = size.x;
@@ -34,7 +38,9 @@ static bool ImageInspector(const char* id, const cs474::graphics::Texture& img, 
         float region_sz = 32.0f;
         float region_x = offset.x + io.MousePos.x - pos.x - region_sz * 0.5f;
         float region_y = offset.y + io.MousePos.y - pos.y - region_sz * 0.5f;
-        float zoom = 4.0f;
+        
+        float zoom = 5.0f;
+
         if (region_x < 0.0f) { region_x = 0.0f; }
         else if (region_x > my_tex_w - region_sz) { region_x = my_tex_w - region_sz; }
         if (region_y < 0.0f) { region_y = 0.0f; }

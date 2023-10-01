@@ -26,6 +26,7 @@ namespace cs474 {
 		bool inspect_eq = false;
 		const char* spechistoChoice = "boat";
 		const char* imageChoice = "boat";
+		bool inspect_spec = false;
 		//std::vector<uint8_t> specImageData;
 	};
 }

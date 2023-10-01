@@ -1,7 +1,7 @@
 #include "cs474.pch.h"
 #include "Application.h"
 #include "Layer/Base.h"
-#include "Layer/Test.h"
+#include "Layer/Assignment1.h"
 #include "Layer/AssignmentTest1.h"
 #include "Layer/AssignmentTest2.h"
 
@@ -14,7 +14,8 @@ Application::Application(const ApplicationSpecification& spec)
     global::AddResource("g_FirstFrame", true);
 
     PushLayer<Base>();
-    PushLayer<Test>();
+    PushLayer<Assignment1>();
+
     PushLayer<AssignmentTest1>();
     PushLayer<AssignmentTest2>();
 }
@@ -34,12 +35,15 @@ void Application::Run() {
 
         // Dockspace
         {
-            ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
-                ImGuiDockNodeFlags_PassthruCentralNode);
+            ImGuiID id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
+                ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoResize);
+            if (global::GetResourceUnwrapped("g_FirstFrame")) {
+                global::AddResource("g_DockspaceOverViewport", id);
+            }
         }
 
         {
-            ImGui::ShowDemoWindow();
+            //ImGui::ShowDemoWindow();
         }
 
         // Draw Layers
@@ -84,12 +88,11 @@ void Application::InitializeImGui() {
     ImGui_ImplOpenGL3_Init();
 
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
+    io.ConfigWindowsResizeFromEdges = false;
     // Setup style
     //ImGui::StyleColorsLight();
     ImGui::StyleColorsDark();

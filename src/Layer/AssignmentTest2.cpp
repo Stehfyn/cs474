@@ -18,10 +18,12 @@ namespace cs474 {
 	}
 
 	void AssignmentTest2::OnUIRender() {
+		/*
 		this->Question1();
 		this->Question2();
 		this->Question3();
 		this->Question4();
+		*/
 	}
 	void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
@@ -280,19 +282,18 @@ namespace cs474 {
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
 			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_spec, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
 
 			const std::optional<graphics::Texture>& spec_opt = image_registry->GetTexture(imageChoice, "spec");
 
-
 			if (spec_opt.has_value()) {
 				const auto& img_sub = spec_opt.value();
 				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_spec, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_spec= false;
 				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
 			}
 			else {
@@ -310,7 +311,6 @@ namespace cs474 {
 
 
 			ImGui::Separator();
-			
 			
 			static bool init_sample = true;
 			if (ImGui::Button("Histogram Specification") || init_sample) {
