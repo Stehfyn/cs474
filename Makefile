@@ -86,7 +86,9 @@ CLIENT_SOURCES = \
 	$(CLIENT_DIR)/cs474-client.cpp \
 	$(CLIENT_DIR)/Application.cpp \
 	$(GRAPHICS_DIR)/Image.cpp \
-	$(LAYER_DIR)/Test.cpp \
+	$(LAYER_DIR)/Assignment1.cpp \
+	$(LAYER_DIR)/AssignmentTest1.cpp \
+	$(LAYER_DIR)/AssignmentTest2.cpp \
 	$(WIDGETS_DIR)/Markdown.cpp \
 	$(UTILS_DIR)/js-helpers.cpp \
 	$(LAYER_DIR)/Base.cpp

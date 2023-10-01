@@ -6,6 +6,10 @@ Assignment1::Assignment1() {
 Assignment1::~Assignment1() {
 }
 void Assignment1::OnAttach() {
+	global::UpdateResource("g_Assignment1ScrollToImage Sampling", false);
+	global::UpdateResource("g_Assignment1ScrollToImage Quantization", false);
+	global::UpdateResource("g_Assignment1ScrollToHistogram Equalization", false);
+	global::UpdateResource("g_Assignment1ScrollToHistogram Specification", false);
 }
 void Assignment1::OnDetach() {
 }
@@ -18,7 +22,7 @@ void Assignment1::OnUIRender() {
 		//ImGuiWindowClass wc;
 		//wc.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize | ImGuiDockNodeFlags_NoUndocking;
 		//ImGui::SetNextWindowClass(&wc);
-		
+
 		ImGui::Begin("Assignment 1", &open);
 		{
 			this->Question1();
@@ -48,7 +52,11 @@ void Assignment1::OnUIRender() {
 }
 void Assignment1::Question1() {
 	widgets::markdown("# 1. Image Sampling");
-	
+	if (global::GetResourceUnwrapped("g_Assignment1ScrollToImage Sampling")) {
+		ImGui::SetScrollHereY();
+		global::UpdateResource("g_Assignment1ScrollToImage Sampling", false);
+	}
+
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 
 	const std::optional<graphics::Texture>& img_opt_lenna = image_registry->GetTexture("lenna", ".pgm");
@@ -206,6 +214,10 @@ void Assignment1::Question1() {
 }
 void Assignment1::Question2() {
 	widgets::markdown("# 2. Image Quantization");
+	if (global::GetResourceUnwrapped("g_Assignment1ScrollToImage Quantization")) {
+		ImGui::SetScrollHereY();
+		global::UpdateResource("g_Assignment1ScrollToImage Quantization", false);
+	}
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 
@@ -384,6 +396,10 @@ void Assignment1::Question2() {
 }
 void Assignment1::Question3() {
 	widgets::markdown("# 3. Histogram Equalization");
+	if (global::GetResourceUnwrapped("g_Assignment1ScrollToHistogram Equalization")) {
+		ImGui::SetScrollHereY();
+		global::UpdateResource("g_Assignment1ScrollToHistogram Equalization", false);
+	}
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
 	const std::optional<graphics::Texture>& boat_img_opt = image_registry->GetTexture("boat", ".pgm");
@@ -510,6 +526,10 @@ void Assignment1::Question3() {
 }
 void Assignment1::Question4() {
 	widgets::markdown("# 4. Histogram Specification");
+	if (global::GetResourceUnwrapped("g_Assignment1ScrollToHistogram Specification")) {
+		ImGui::SetScrollHereY();
+		global::UpdateResource("g_Assignment1ScrollToHistogram Specification", false);
+	}
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	const std::optional<graphics::Texture>& boat_img_opt = image_registry->GetTexture("boat", ".pgm");
@@ -529,7 +549,7 @@ void Assignment1::Question4() {
 		const std::vector<uint8_t>& rawDataSf = sf_img->GetRawData();
 		const auto& peppers_img = peppers_img_opt.value();
 		const std::vector<uint8_t>& rawDataPeppers = peppers_img->GetRawData();
-
+		
 		auto do_specification = [&](const std::string& src_name, const std::string& spec_name, const std::vector<uint8_t>& src, int width, int height) {
 			const std::optional<graphics::Texture>& spec_img_opt = image_registry->GetTexture(spec_name, ".pgm");
 			if (spec_img_opt.has_value()) {

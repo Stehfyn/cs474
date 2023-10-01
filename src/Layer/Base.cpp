@@ -50,7 +50,7 @@ void Base::DoTableOfContents() {
             ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         }
 
-        static std::vector<std::string> headers = { "Sampling", "Quantization", "Histogram Equalization", "Histogram Specification" };
+        static std::vector<std::string> headers = { "Image Sampling", "Image Quantization", "Histogram Equalization", "Histogram Specification" };
         if (ImGui::TreeNode("Programming Assignments")) {
             if (global::GetResourceUnwrapped("g_FirstFrame")) {
                 ImGui::SetNextItemOpen(true, ImGuiCond_Once);
@@ -65,6 +65,7 @@ void Base::DoTableOfContents() {
                     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                         selected = i;
                         global::UpdateResource("g_ShowAssignment1", true);
+                        global::UpdateResource("g_Assignment1ScrollTo" + headers[i], true);
                     }
                 }
                 ImGui::TreePop();
