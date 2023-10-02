@@ -66,6 +66,7 @@ void Base::DoTableOfContents() {
                         selected = i;
                         global::UpdateResource("g_ShowAssignment1", true);
                         global::UpdateResource("g_Assignment1ScrollTo" + headers[i], true);
+                        ImGui::FocusWindow(ImGui::FindWindowByName("Assignment 1"));
                     }
                 }
                 ImGui::TreePop();
