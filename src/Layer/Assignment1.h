@@ -18,6 +18,7 @@ public:
 	void Question2();
 	void Question3();
 	void Question4();
+	void Test();
 
 private:
 	int factor1 = 1;
