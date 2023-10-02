@@ -44,18 +44,20 @@ void Assignment1::OnUIRender() {
 			ImGui::NewLine();
 			ImGui::NewLine();
 			ImGui::NewLine();
+
 		}
 		ImGui::End();
 
 		if (!open) global::UpdateResource("g_ShowAssignment1", false);
+		//this->Test();
 	}
 }
 void Assignment1::Question1() {
-	widgets::markdown("# 1. Image Sampling");
 	if (global::GetResourceUnwrapped("g_Assignment1ScrollToImage Sampling")) {
-		ImGui::SetScrollHereY();
+		ImGui::SetScrollHereY(.0f);
 		global::UpdateResource("g_Assignment1ScrollToImage Sampling", false);
 	}
+	widgets::markdown("# 1. Image Sampling");
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 
@@ -213,11 +215,11 @@ void Assignment1::Question1() {
 
 }
 void Assignment1::Question2() {
-	widgets::markdown("# 2. Image Quantization");
 	if (global::GetResourceUnwrapped("g_Assignment1ScrollToImage Quantization")) {
-		ImGui::SetScrollHereY();
+		ImGui::SetScrollHereY(.0f);
 		global::UpdateResource("g_Assignment1ScrollToImage Quantization", false);
 	}
+	widgets::markdown("# 2. Image Quantization");
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 
@@ -395,11 +397,11 @@ void Assignment1::Question2() {
 
 }
 void Assignment1::Question3() {
-	widgets::markdown("# 3. Histogram Equalization");
 	if (global::GetResourceUnwrapped("g_Assignment1ScrollToHistogram Equalization")) {
-		ImGui::SetScrollHereY();
+		ImGui::SetScrollHereY(.0f);
 		global::UpdateResource("g_Assignment1ScrollToHistogram Equalization", false);
 	}
+	widgets::markdown("# 3. Histogram Equalization");
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
 	const std::optional<graphics::Texture>& boat_img_opt = image_registry->GetTexture("boat", ".pgm");
@@ -525,11 +527,11 @@ void Assignment1::Question3() {
 	}
 }
 void Assignment1::Question4() {
-	widgets::markdown("# 4. Histogram Specification");
 	if (global::GetResourceUnwrapped("g_Assignment1ScrollToHistogram Specification")) {
-		ImGui::SetScrollHereY();
+		ImGui::SetScrollHereY(.0f);
 		global::UpdateResource("g_Assignment1ScrollToHistogram Specification", false);
 	}
+	widgets::markdown("# 4. Histogram Specification");
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	const std::optional<graphics::Texture>& boat_img_opt = image_registry->GetTexture("boat", ".pgm");
@@ -671,7 +673,7 @@ void Assignment1::Question4() {
 		ImGui::Separator();
 
 		std::vector<std::string> items2 = { "boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
-		static int item_current_idx1 = 5;
+		static int item_current_idx1 = 6;
 		ImGui::SetNextItemWidth(100);
 		if (ImGui::BeginCombo("Specified Histogram##specification1", items2[item_current_idx1].c_str()))
 		{
@@ -695,7 +697,7 @@ void Assignment1::Question4() {
 		ImGui::SameLine();
 
 		ImGui::SetCursorPosX(f16_x);
-		static int item_current_idx2 = 4;
+		static int item_current_idx2 = 5;
 		ImGui::SetNextItemWidth(100);
 		if (ImGui::BeginCombo("Specified Histogram##specification2", items2[item_current_idx2].c_str()))
 		{
@@ -716,5 +718,161 @@ void Assignment1::Question4() {
 			ImGui::EndCombo();
 		}
 	}
+}
+void Assignment1::Test() {
+	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
+
+	auto make_test1 = [&]() {
+		std::vector<uint8_t> test1(25);
+		for (int i = 0; i < 25; ++i) {
+			if (i == 12) test1[i] = 100;
+			else test1[i] = 200;
+		}
+		const auto& test1_scaled = scale(test1, 52, 5, 5);
+		if (test1_scaled.has_value()) {
+			const auto& test1_texture = graphics::make_texture(test1_scaled.value(), 260, 260, 1);
+
+			const auto& test1_equalized = hist_eq(test1_texture->GetRawData(), 260, 260);
+			const auto& test1_texture_eq = graphics::make_texture(test1_equalized, 260, 260, 1);
+
+			image_registry->AddTexture("lenna", "test1", test1_texture);
+			image_registry->AddTexture("lenna", "test1_eq", test1_texture_eq);
+		}
+	};
+
+	auto make_test2 = [&]() {
+		std::vector<uint8_t> test2(25);
+		for (int i = 0; i < 25; ++i) {
+			if (i % 2 == 0) test2[i] = 100;
+			else test2[i] = 50;
+		}
+		const auto& test2_scaled = scale(test2, 52, 5, 5);
+		if (test2_scaled.has_value()) {
+			const auto& test2_texture = graphics::make_texture(test2_scaled.value(), 260, 260, 1);
+			const auto& sf = image_registry->GetTexture("sf", ".pgm");
+
+			if (sf.has_value()) {
+				const auto& test2_equalized = hist_spec(test2_texture->GetRawData(), sf.value()->GetRawData(), 260, 260);
+				if (test2_equalized.has_value()) {
+					const auto& test2_texture_eq = graphics::make_texture(test2_equalized.value(), 260, 260, 1);
+
+					image_registry->AddTexture("lenna", "test2", test2_texture);
+					image_registry->AddTexture("lenna", "test2_eq", test2_texture_eq);
+				}
+			}
+		}
+	};
+
+	ImGui::Begin("Histogram Equalization Test");
+	auto test1 = image_registry->GetTexture("lenna", "test1");
+	auto test1_eq = image_registry->GetTexture("lenna", "test1_eq");
+	if (test1.has_value() && test1_eq.has_value()) {
+		const auto& img = test1.value();
+		const auto& img_eq = test1_eq.value();
+		ImGui::Image((void*)(intptr_t)img->GetRendererID(), ImVec2(img->GetWidth(), img->GetHeight()));
+		ImGui::SameLine();
+		float eq_x = ImGui::GetCursorPosX();
+		ImGui::Image((void*)(intptr_t)img_eq->GetRendererID(), ImVec2(img_eq->GetWidth(), img_eq->GetHeight()));
+		
+
+		std::vector<float> original = hist(img->GetRawData());
+		ImGui::PlotHistogram("##Orignal test1",
+			original.data(),           // Pointer to the data
+			original.size(),           // Number of data points
+			0,                           // Index offset (not needed in this case)
+			nullptr,                     // Overlay text
+			0.0f,                        // Scale min (0 for automatic scaling)
+			*std::max_element(original.begin(), original.end()), // Scale max
+			ImVec2(img->GetWidth(), 80)                 // Graph size (0 for automatic sizing)
+		);
+
+		ImGui::SameLine();
+
+		std::vector<float> equalized = hist(img_eq->GetRawData());
+		ImGui::PlotHistogram("##Equalized test1",
+			equalized.data(),           // Pointer to the data
+			equalized.size(),           // Number of data points
+			0,                           // Index offset (not needed in this case)
+			nullptr,                     // Overlay text
+			0.0f,                        // Scale min (0 for automatic scaling)
+			*std::max_element(equalized.begin(), equalized.end()), // Scale max
+			ImVec2(img_eq->GetWidth(), 80)                 // Graph size (0 for automatic sizing)
+		);
+
+		ImGui::Text("Original: ");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(eq_x);
+		ImGui::Text("Processed: ");
+		ImGui::Separator();
+	}
+	else {
+		make_test1();
+	}
+	ImGui::End();
+
+	ImGui::Begin("Histogram Specification Test");
+	auto test2 = image_registry->GetTexture("lenna", "test2");
+	auto test2_eq = image_registry->GetTexture("lenna", "test2_eq");
+	if (test2.has_value() && test2_eq.has_value()) {
+		const auto& img = test2.value();
+		const auto& img_eq = test2_eq.value();
+		ImGui::Image((void*)(intptr_t)img->GetRendererID(), ImVec2(img->GetWidth(), img->GetHeight()));
+		ImGui::SameLine();
+		float eq_x = ImGui::GetCursorPosX();
+		ImGui::Image((void*)(intptr_t)img_eq->GetRendererID(), ImVec2(img_eq->GetWidth(), img_eq->GetHeight()));
+		
+		std::vector<float> original = hist(img->GetRawData());
+		ImGui::PlotHistogram("##Orignal test2",
+			original.data(),           // Pointer to the data
+			original.size(),           // Number of data points
+			0,                           // Index offset (not needed in this case)
+			nullptr,                     // Overlay text
+			0.0f,                        // Scale min (0 for automatic scaling)
+			*std::max_element(original.begin(), original.end()), // Scale max
+			ImVec2(img->GetWidth(), 80)                 // Graph size (0 for automatic sizing)
+		);
+
+		ImGui::SameLine();
+
+		std::vector<float> equalized = hist(img_eq->GetRawData());
+		ImGui::PlotHistogram("##Equalized test2",
+			equalized.data(),           // Pointer to the data
+			equalized.size(),           // Number of data points
+			0,                           // Index offset (not needed in this case)
+			nullptr,                     // Overlay text
+			0.0f,                        // Scale min (0 for automatic scaling)
+			*std::max_element(equalized.begin(), equalized.end()), // Scale max
+			ImVec2(img_eq->GetWidth(), 80)                 // Graph size (0 for automatic sizing)
+		);
+
+		ImGui::Text("Original: ");
+		ImGui::SameLine();
+		ImGui::SetCursorPosX(eq_x);
+		ImGui::Text("Specified: ");
+
+		ImGui::SetCursorPosX((img->GetWidth() + (ImGui::GetStyle().ItemSpacing.x / 2.0f)) - (img->GetWidth() / 2.0f));
+		float sf_x = ImGui::GetCursorPosX();
+		const auto& sf_img = image_registry->GetTexture("sf", ".pgm");
+		if (sf_img.has_value()) {
+			std::vector<float> sf = hist(sf_img.value()->GetRawData());
+			ImGui::PlotHistogram("##Orignal sf2",
+				sf.data(),           // Pointer to the data
+				sf.size(),           // Number of data points
+				0,                           // Index offset (not needed in this case)
+				nullptr,                     // Overlay text
+				0.0f,                        // Scale min (0 for automatic scaling)
+				*std::max_element(sf.begin(), sf.end()), // Scale max
+				ImVec2(img->GetWidth(), 80)                 // Graph size (0 for automatic sizing)
+			);
+		}
+		ImGui::SetCursorPosX(sf_x);
+		ImGui::Text("sf: ");
+
+		ImGui::Separator();
+	}
+	else {
+		make_test2();
+	}
+	ImGui::End();
 }
 } // namespace cs474
