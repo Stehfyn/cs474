@@ -5,7 +5,7 @@ Stephen Foster: [@Stehfyn](https://github.com/Stehfyn)<br>
 Joey Paschke [@DuckieOnQuacks](https://github.com/DuckieOnQuacks)
 
 ## Live Version
- A live version can be found at: [stehfyn.github.io/cs474/](stehfyn.github.io/cs474/)
+ A live version can be found at: [stehfyn.github.io/cs474/](https://stehfyn.github.io/cs474/)
 
 ## How to build (GNU Make)
 ### Build Steps
