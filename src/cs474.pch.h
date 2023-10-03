@@ -20,9 +20,15 @@
 #include <typeindex>
 #include <functional>
 #include <variant>
+#include <thread>
+#include <condition_variable>
+#include <chrono>
+#include <semaphore>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/fetch.h>
+#include <emscripten/threading.h>
 #endif
 
 #define GLFW_INCLUDE_ES3
@@ -52,6 +58,7 @@
 
 #include "Utils/io.hpp"
 #include "Utils/js-helpers.h"
+#include "Utils/emscripten-helpers.hpp"
 
 #include "Utils/imgui_helpers.hpp"
 
