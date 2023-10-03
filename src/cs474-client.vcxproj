@@ -37,6 +37,7 @@
     <ClInclude Include="Global\ResourceManager.hpp" />
     <ClInclude Include="Graphics\Image.h" />
     <ClInclude Include="Layer\AssignmentTest2.h" />
+    <ClInclude Include="Utils\emscripten-helpers.hpp" />
     <ClInclude Include="Widgets\ImageInspector.h" />
     <ClInclude Include="Widgets\Markdown.h" />
     <ClInclude Include="Widgets\StatusBar.h" />
@@ -96,7 +97,7 @@
     <Link>
       <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 -s FETCH=1 -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -128,7 +129,7 @@
     <Link>
       <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1  -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 -s FETCH=1 -s ALLOW_MEMORY_GROWTH --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>

@@ -25,5 +25,6 @@ private:
 private:
 	int selected = 0;
 	std::string img_key;
+	std::string readme;
 };
 }
