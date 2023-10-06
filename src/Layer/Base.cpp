@@ -9,7 +9,7 @@ Base::~Base() {
 void Base::OnAttach() {
     this->LoadImages();
     global::AddResource("g_ShowAssignment1", false);
-    utils::fetch_as_string("https://raw.githubusercontent.com/stehfyn/cs474/main/README.md", readme);
+    utils::fetch_bytes("readme", "https://raw.githubusercontent.com/stehfyn/cs474/main/README.md");
 }
 void Base::OnDetach() {
 }
@@ -78,7 +78,6 @@ void Base::DoTableOfContents() {
 }
 
 void Base::DoLandingPage() {
-
     static bool open = true;
     ImGuiWindowFlags window_flags = utils::GetBaseLayerWindowFlags();
     ImGuiWindowClass wc;
@@ -87,8 +86,19 @@ void Base::DoLandingPage() {
     
     ImGui::Begin("LandingPage", &open, window_flags);
 
-    // this is such a hack someone take my software engineering privileges away
-    widgets::markdown(std::string(reinterpret_cast<const char*>(utils::s_FetchBuffer.data()), utils::s_FetchBuffer.size()).c_str());
+    if (!readme.size()) {
+        std::optional<std::reference_wrapper<const global::Resource>> bytes = global::GetResource("readme");
+        // Readme has been fetched
+        if (bytes.has_value()) {
+            const std::vector<uint8_t>& readme_bytes = bytes.value().get();
+            readme = std::string(reinterpret_cast<const char*>(readme_bytes.data()), readme_bytes.size());
+            emscripten_log(EM_LOG_CONSOLE, "loaded readme");
+        }
+    }
+    else {
+        widgets::markdown(readme.c_str());
+    }
+
     ImGui::End();
 }
 

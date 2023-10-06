@@ -33,21 +33,17 @@ void Application::Run() {
                 layer->OnUpdate(ImGui::GetIO().DeltaTime);
         }
 
-        // Dockspace
+        // Draw Layers
         {
+            // Dockspace
             ImGuiID id = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
                 ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoResize);
             if (global::GetResourceUnwrapped("g_FirstFrame")) {
                 global::AddResource("g_DockspaceOverViewport", id);
             }
-        }
 
-        {
             //ImGui::ShowDemoWindow();
-        }
 
-        // Draw Layers
-        {
             for (auto& layer : m_LayerStack)
                 layer->OnUIRender();            
         }
