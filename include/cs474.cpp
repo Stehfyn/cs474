@@ -9,8 +9,6 @@ namespace cs474 {
 	{
 
 	}
-
-
 	std::optional<std::vector<uint8_t>> subSample(const std::vector<uint8_t>& rawData, int factor, int width, int height)
 	{
 		if (width != height)
@@ -152,5 +150,25 @@ namespace cs474 {
 		}
 
 		return { specifiedData };
+	}
+
+	std::vector<uint8_t> spatial_filtering(const std::vector<uint8_t>& image_data, int image_width, int image_height, const std::vector<uint8_t>& mask_data, int mask_width, int mask_height)
+	{
+		int output_width = image_width - mask_width + 1;
+		int output_height = image_height - mask_height + 1;
+		std::vector<uint8_t> output_data(output_width * output_height);
+
+		for (int i = 0; i < output_height; ++i) {
+			for (int j = 0; j < output_width; ++j) {
+				int sum = 0;
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						sum += image_data[(i + mi) * image_width + (j + mj)] * mask_data[mi * mask_width + mj];
+					}
+				}
+				output_data[i * output_width + j] = sum;  // You might want to normalize this value
+			}
+		}
+		return output_data;
 	}
 } // namespace cs474
