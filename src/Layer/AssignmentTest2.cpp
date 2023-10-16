@@ -18,42 +18,6 @@ namespace cs474 {
 	}
 
 	void AssignmentTest2::OnUIRender() {
-
-		std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
-		const std::optional<std::reference_wrapper<const global::Resource>>& opt_filtered = global::GetResource("filtered_thread_data");
-		static bool loaded = false;
-		if (opt_filtered.has_value() && !loaded)
-		{
-			const std::vector<float>& filtered_ = opt_filtered.value().get();
-			std::vector<uint8_t> filtered(filtered_.size());
-			for (int i = 0; i < filtered.size(); ++i)
-			{
-				filtered[i] = static_cast<uint8_t>(255.0f * filtered_[i]);
-			}
-			bool success = image_registry->AddTexture("ImagePadded", "filt", graphics::make_texture(filtered, 444, 333, 1));
-			loaded = true;
-		}
-		const std::optional<graphics::Texture>& og_opt = image_registry->GetTexture("ImagePadded", ".pgm");
-		const std::optional<graphics::Texture>& filt_opt = image_registry->GetTexture("ImagePadded", "filt");
-		if (og_opt.has_value() && filt_opt.has_value())
-		{
-			ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("ThreadedFilter"));
-			const auto& style = ImGui::GetStyle();
-			ImVec2 size = { 912, 480 };
-			ImGui::SetNextWindowSize(size);
-
-			ImVec2 pos = { 200 + 640, 0 };
-			ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
-
-			ImGui::Begin("ThreadedFilter");
-			ImGui::Image((void*)(intptr_t)(og_opt.value()->GetRendererID()), ImVec2(444, 333));
-			ImGui::SameLine();
-			//ImGui::Image((void*)(intptr_t)(filt_opt.value()->GetRendererID()), ImVec2(444, 333));
-			static bool inspect_filt = false;
-			inspect_filt = widgets::ImageInspector("inspect4", filt_opt.value(), &inspect_filt, { 0.0f, 0.0f }, { style.ItemSpacing.x + 444, 0.0f });
-			inspect_filt = false;
-			ImGui::End();
-		}
 		/*
 		this->Question1();
 		this->Question2();
