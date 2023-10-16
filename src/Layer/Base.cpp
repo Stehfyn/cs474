@@ -2,39 +2,7 @@
 #include "Base.h"
 #include "..\Widgets\Markdown.h"
 
-void do_frame(void* void_fn_ptr) {
-    auto* fn_ptr = reinterpret_cast<std::function<void()>*>(void_fn_ptr);
-    if (fn_ptr) {
-        auto& fn = *fn_ptr;
-        fn();
-    }
-}
-
 namespace cs474 {
-void do_filter()
-{
-    emscripten_log(EM_LOG_CONSOLE, "still checkin");
-    std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
-    const std::optional<graphics::Texture>& img_opt_padded = image_registry->GetTexture("ImagePadded", ".pgm");
-    const std::optional<graphics::Texture>& pat_opt_padded = image_registry->GetTexture("PatternPadded", ".pgm");
-    static bool one_attempt = true;
-    if (img_opt_padded.has_value() && one_attempt)
-    {
-        one_attempt = false;
-        const auto& padded = img_opt_padded.value();
-        const auto& patPadded = pat_opt_padded.value();
-        emscripten_log(EM_LOG_CONSOLE, "can access image_reg");
-        auto filtered = spatial_filtering(padded->GetRawData(), padded->GetWidth(), padded->GetHeight(), patPadded->GetRawData(), patPadded->GetWidth(), patPadded->GetHeight());
-        emscripten_log(EM_LOG_CONSOLE, "processed: {%zu}", filtered.size());
-        global::AddResource("filtered_thread_data", filtered);
-        const std::vector<float>& opt_filtered = global::GetResourceUnwrapped("filtered_thread_data");
-        if (padded->GetRawData().size() == opt_filtered.size() == filtered.size()) {
-            emscripten_log(EM_LOG_CONSOLE, "data is valid");
-        }
-        emscripten_log(EM_LOG_CONSOLE, "og: {%zu} filtered: {%zu}, fetched: {%zu}", padded->GetRawData().size(), filtered.size(), opt_filtered.size());
-    }
-}
-
 Base::Base() {
 }
 Base::~Base() {
@@ -42,12 +10,8 @@ Base::~Base() {
 void Base::OnAttach() {
     this->LoadImages();
     global::AddResource("g_ShowAssignment1", false);
+    global::AddResource("g_ShowAssignment2", false);
     utils::fetch_bytes("readme", "https://raw.githubusercontent.com/stehfyn/cs474/main/README.md");
-    emscripten_wasm_worker_t worker1 = emscripten_malloc_wasm_worker(/*stackSize: */1024);
-    emscripten_wasm_worker_t worker2 = emscripten_malloc_wasm_worker(/*stackSize: */1024);
-    int x = 0, y = 0;
-    //emscripten_wasm_worker_post_function_sig(worker1, reinterpret_cast<std::function<void(int, int)>*>(&printxy), "void(int,int)", x, y);
-    emscripten_wasm_worker_post_function_sig(worker2, reinterpret_cast<std::function<void()>*>(&do_filter), "void()");
 }
 void Base::OnDetach() {
 }
@@ -88,26 +52,35 @@ void Base::DoTableOfContents() {
             ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         }
 
-        static std::vector<std::string> headers = { "Image Sampling", "Image Quantization", "Histogram Equalization", "Histogram Specification" };
+        static std::vector<std::string> as1_headers = { "Image Sampling", "Image Quantization", "Histogram Equalization", "Histogram Specification" };
+        static std::vector<std::string> as2_headers = { "Correlation", "Averaging and Gaussian Smoothing", "Median Filtering", "Unsharp Masking and High Boost Filtering", "Gradient and Laplacian"};
+        static std::vector<std::vector<std::string>> headers = { as1_headers, as2_headers };
         if (ImGui::TreeNode("Programming Assignments")) {
-            if (global::GetResourceUnwrapped("g_FirstFrame")) {
-                ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-            }
-            if (ImGui::TreeNode("Assignment 1")) {
-                static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-                static int selected = -1;
-                for (int i = 0; i < 4; ++i) {
-                    ImGuiTreeNodeFlags node_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
-                    if (i == selected) node_flags |= ImGuiTreeNodeFlags_Selected;
-                    ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "%d. %s", i + 1, (headers[i]).c_str());
-                    if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-                        selected = i;
-                        global::UpdateResource("g_ShowAssignment1", true);
-                        global::UpdateResource("g_Assignment1ScrollTo" + headers[i], true);
-                        ImGui::FocusWindow(ImGui::FindWindowByName("Assignment 1"));
-                    }
+            for (int h = 0; h < headers.size(); ++h) {
+                std::string hid = std::to_string(h + 1);
+
+                if (global::GetResourceUnwrapped("g_FirstFrame")) {
+                    ImGui::SetNextItemOpen(true, ImGuiCond_Once);
                 }
-                ImGui::TreePop();
+
+                if (ImGui::TreeNode(("Assignment " + hid).c_str())) {
+                    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+                    static int selected = -1;
+                    static int selected_header = -1;
+                    for (int i = 0; i < headers[h].size(); ++i) {
+                        ImGuiTreeNodeFlags node_flags = base_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen; // ImGuiTreeNodeFlags_Bullet
+                        if ((i == selected) && (selected_header == h)) node_flags |= ImGuiTreeNodeFlags_Selected;
+                        ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "%d. %s", i + 1, (headers[h][i]).c_str());
+                        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+                            selected = i;
+                            selected_header = h;
+                            global::UpdateResource(("g_ShowAssignment" + hid).c_str(), true);
+                            global::UpdateResource(("g_Assignment" + hid + "ScrollTo" + headers[h][i]).c_str(), true);
+                            ImGui::FocusWindow(ImGui::FindWindowByName(("Assignment " + hid).c_str()));
+                        }
+                    }
+                    ImGui::TreePop();
+                }
             }
             ImGui::TreePop();
         }
@@ -257,6 +230,7 @@ void Base::BuildDockspace() {
     ImGui::DockBuilderDockWindow("TableOfContents", dock1);
     ImGui::DockBuilderDockWindow("LandingPage", id);
     ImGui::DockBuilderDockWindow("Assignment 1", id);
+    ImGui::DockBuilderDockWindow("Assignment 2", id);
 
     /*
     ImGui::DockBuilderDockWindow("Dear ImGui Demo", dock2);
