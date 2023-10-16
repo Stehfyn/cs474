@@ -18,4 +18,5 @@ namespace cs474 {
 	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask);
 	std::optional <std::vector<uint8_t>> addNoise(const std::vector<uint8_t>& data, int width, int height, float percentage);
 	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize);
+	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& originaldata, const std::vector<uint8_t>& blurredData, int width, int height, int kValue);
 } // namespace cs474

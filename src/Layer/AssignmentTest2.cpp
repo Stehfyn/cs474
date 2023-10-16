@@ -491,137 +491,107 @@ namespace cs474 {
 	void AssignmentTest2::Question4() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question4"));
 
-		ImVec2 size = { 640, 750 };
+		ImVec2 size = { 1200, 1200 };
 		ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200 + 640, 480 };
+		ImVec2 pos = { 200, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
 		ImGui::Begin("Question4");
 		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
-		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(imageChoice, ".pgm");
-		const std::optional<graphics::Texture>& specHisto_opt = image_registry->GetTexture(spechistoChoice, ".pgm");
+		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
+
+		std::vector<double> gausMask7x7 = { 1,1,2,2,2,1,1,1,2,2,4,2,2,1,2,2,4,8,4,2,2,2,4,8,16,8,4,2,2,2,4,8,4,2,2,1,2,2,4,2,2,1,1,1,2,2,2,1,1 };
 
 		if (img_opt.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_spec, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
+			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "gaus");
 
-			const std::optional<graphics::Texture>& spec_opt = image_registry->GetTexture(imageChoice, "spec");
-
-			if (spec_opt.has_value()) {
-				const auto& img_sub = spec_opt.value();
+			if (sub_opt.has_value()) {
+				const auto& img_sub = sub_opt.value();
 				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_spec, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_spec = false;
-				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
+			ImGui::SameLine();
+
+			const std::optional<graphics::Texture>& sub_opt_unsharp = image_registry->GetTexture("lenna", "unsharp");
+
+			if (sub_opt_unsharp.has_value()) {
+				const auto& img_sub = sub_opt_unsharp.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect3", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
+			ImGui::SameLine();
+
+			const std::optional<graphics::Texture>& sub_opt_boost = image_registry->GetTexture("lenna", "boost");
+
+			if (sub_opt_boost.has_value()) {
+				const auto& img_sub = sub_opt_boost.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect4", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
 			}
 			else {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
 			ImGui::Text("Original: ");
-			ImGui::SameLine();
 
-			//ImGui::Dummy(,)
+			ImGui::SameLine();
 
 			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
-			ImGui::Text("Histogram Specification with Image: ");
+			ImGui::Text("Gaussian Blurred 7x7: ");
 
+			ImGui::SameLine();
+
+			float x_offset2 = 3 * style.ItemSpacing.x + ((float)img->GetWidth() * 2 - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset2);
+			ImGui::Text("Unsharp Mask: ");
+
+			ImGui::SameLine();
+
+			float x_offset3 = 4 * style.ItemSpacing.x + ((float)img->GetWidth() * 3 - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset3);
+			ImGui::Text("Boost Filter K = 5: ");
 
 			ImGui::Separator();
-
-			static bool init_sample = true;
-			if (ImGui::Button("Histogram Specification") || init_sample) {
-				const auto& specHistoImgData = specHisto_opt.value();
-				auto specifiedHistogram = hist_spec(rawData, specHistoImgData->GetRawData(), img->GetWidth(), img->GetHeight());
-				if (specifiedHistogram.has_value()) {
-					std::vector<uint8_t> specImagedata = specifiedHistogram.value();
-					auto scaled = scale(specImagedata, factor, img->GetWidth() / factor, img->GetHeight() / factor);
-					if (scaled.has_value()) {
-						auto scaled_data = scaled.value();
-						bool success = image_registry->AddTexture(imageChoice, "spec", graphics::make_texture(scaled_data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+		
+			static bool init_sample2 = true;
+			if (init_sample2) {
+				auto smoothData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), 7, gausMask7x7);
+				if (smoothData.has_value()) {
+					const auto& data = smoothData.value();
+					image_registry->AddTexture("lenna", "gaus", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+					auto boostData = unsharpAndBoostFilter(img->GetRawData(), data, img->GetHeight(), img->GetWidth(), 5);
+					auto unsharpData = unsharpAndBoostFilter(img->GetRawData(), data, img->GetHeight(), img->GetWidth(), 1);
+					if (unsharpData.has_value() && boostData.has_value()) {
+						image_registry->AddTexture("lenna", "boost", graphics::make_texture(boostData.value(), img->GetWidth(), img->GetHeight(), 1));
+						image_registry->AddTexture("lenna", "unsharp", graphics::make_texture(unsharpData.value(), img->GetWidth(), img->GetHeight(), 1));
+					}
+					if (init_sample2) {
+						init_sample2 = false;
 					}
 				}
-				if (init_sample) {
-					init_sample = false;
-				}
-
 			}
-
-			//Creating a Combo menu for the factor choices
-			std::vector<std::string> items = { "boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
-			static int item_current_idx = 0;
-			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Original Image", items[item_current_idx].c_str()))
-			{
-				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < items.size(); n++)
-				{
-					const bool is_selected = (item_current_idx == n);
-					if (ImGui::Selectable(items[n].c_str(), is_selected))
-					{
-						item_current_idx = n;
-						imageChoice = items[n].c_str();  // Or simply use items[n] if specifiedHisto is a std::string
-					}
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-
-			//Creating a Combo menu for the factor choices
-			std::vector<std::string> items2 = { "boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
-			static int item_current_idx2 = 0;
-			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Specified Histogram", items2[item_current_idx2].c_str()))
-			{
-				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < items2.size(); n++)
-				{
-					const bool is_selected2 = (item_current_idx2 == n);
-					if (ImGui::Selectable(items2[n].c_str(), is_selected2))
-					{
-						item_current_idx2 = n;
-						spechistoChoice = items2[n].c_str();  // Or simply use items[n] if specifiedHisto is a std::string
-					}
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected2)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			std::vector<float> originalImgHisto = hist(img_opt.value()->GetRawData());
-			ImGui::PlotHistogram("Orignal Image Histogram",
-				originalImgHisto.data(),           // Pointer to the data
-				originalImgHisto.size(),           // Number of data points
-				0,                           // Index offset (not needed in this case)
-				nullptr,                     // Overlay text
-				0.0f,                        // Scale min (0 for automatic scaling)
-				*std::max_element(originalImgHisto.begin(), originalImgHisto.end()), // Scale max
-				ImVec2(0, 80)                 // Graph size (0 for automatic sizing)
-			);
-
-			/*std::vector<float> specifiedImgHisto = hist(specImageData);
-			ImGui::PlotHistogram("Specified Image Histogram",
-				specifiedImgHisto.data(),           // Pointer to the data
-				specifiedImgHisto.size(),           // Number of data points
-				0,                           // Index offset (not needed in this case)
-				nullptr,                     // Overlay text
-				0.0f,                        // Scale min (0 for automatic scaling)
-				*std::max_element(specifiedImgHisto.begin(), specifiedImgHisto.end()), // Scale max
-				ImVec2(0, 80)                 // Graph size (0 for automatic sizing)
-			);*/
+			ImGui::End();
 		}
-		ImGui::End();
 	}
 }

@@ -235,8 +235,22 @@ namespace cs474 {
 		return { filtered };
 	}
 
-	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& data, int width, int height, int kValue, int filterSize)
+	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& originaldata, const std::vector<uint8_t>& blurredData, int width, int height, int kValue)
 	{
+		if (blurredData.size() != originaldata.size())
+			return std::nullopt;
 
+		std::vector<uint8_t> result(originaldata.size());
+
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				int maskVal = originaldata[i * width + j] - blurredData[i * width + j];
+				int newVal = originaldata[i * width + j] + static_cast<int>(kValue * maskVal);
+
+				newVal = std::max(0, std::min(newVal, 255));
+				result[i * width + j] = static_cast<uint8_t>(newVal);
+			}
+		}
+		return { result };
 	}
 } // namespace cs474
