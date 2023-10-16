@@ -226,6 +226,7 @@ namespace cs474 {
 		}
 		return similarity;
 	}
+
 	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask) {
 
 		std::vector<uint8_t> smoothedData(width * height);
@@ -326,4 +327,4 @@ namespace cs474 {
 		}
 		return { result };
 	}
-} // namespace cs4
+} // namespace cs474
