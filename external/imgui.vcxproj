@@ -57,11 +57,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui; $(SolutionDir)external\imgui_md;  $(SolutionDir)external\md4c\src</AdditionalIncludeDirectories>
+      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui; $(SolutionDir)external\imgui_md;  $(SolutionDir)external\md4c\src</AdditionalIncludeDirectories>
+      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,5 @@
 #include "..\cs474.pch.h"
 #include "AssignmentTest2.h"
-#include <imgui_demo.cpp>
 #include "..\Graphics\Image.h"
 namespace cs474 {
 	AssignmentTest2::AssignmentTest2() {
@@ -18,10 +17,13 @@ namespace cs474 {
 	}
 
 	void AssignmentTest2::OnUIRender() {
-		//this->Question3();
+
+		
 		//this->Question1();
-		//this->Question2();
+		this->Question2();
+		this->Question3();
 		this->Question4();
+		
 	}
 	void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
