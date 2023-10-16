@@ -20,9 +20,9 @@ namespace cs474 {
 
 		
 		//this->Question1();
-		this->Question2();
-		this->Question3();
-		this->Question4();
+		//this->Question2();
+		//this->Question3();
+		//this->Question4();
 		
 	}
 	void AssignmentTest2::Question1() {
@@ -128,13 +128,6 @@ namespace cs474 {
 		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
 		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
 
-		std::vector<double> avgMask7x7(49, 1.0 / 49.0);
-		std::vector<double> avgMask15x15(225, 1.0 / 225.0);
-		std::vector<double> gausMask7x7 = {1,1,2,2,2,1,1,1,2,2,4,2,2,1,2,2,4,8,4,2,2,2,4,8,16,8,4,2,2,2,4,8,4,2,2,1,2,2,4,2,2,1,1,1,2,2,2,1,1};
-		std::vector<double> gausMask15x15 = {2,2,3,4,5,5,6,6,6,5,5,4,3,2,2,2,3,4,5,7,7,8,8,8,7,7,5,4,3,2,3,4,6,9,10,10,11,10,10,9,7,5,4,3,2,4,5,7,9,10,12,13,13,13,12,10,9,7,6,4,3,
-		5,7,9,11,13,14,15,16,15,14,13,11,9,7,5,5,7,10,12,14,16,17,18,17,16,14,12,10,7,5,6,8,10,13,15,17,19,19,19,17,15,13,10,8,6,6,8,11,13,15,17,19,20,19,18,16,13,11,8,6,6,8,10,13,15,17,19,19,19,17,15,13,10,8,6,
-		5,7,10,12,14,16,17,18,17,16,14,12,10,7,5,5,7,9,11,13,14,15,16,15,14,13,11,9,7,5,4,5,7,9,10,12,13,13,13,12,10,9,7,6,4,3,3,4,6,9,10,10,11,10,10,9,7,5,4,3,2,2,3,4,5,7,7,8,8,8,7,7,5,4,3,2,2,2,3,4,5,5,6,6,6,5,5,4,3,2,2};
-
 		if (img_opt.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
@@ -186,8 +179,7 @@ namespace cs474 {
 
 			ImGui::Separator();
 
-			static bool init_sample = true;
-			if (ImGui::Button("Average") || init_sample) {
+			auto do_avg_filtering = [&]() {
 				if (filterSize == 7) {
 					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, avgMask7x7);
 					if (averagedData.has_value()) {
@@ -204,13 +196,9 @@ namespace cs474 {
 						emscripten_log(EM_LOG_CONSOLE, "%d", success);
 					}
 				}
-				if (init_sample) {
-					init_sample = false;
-				}
-			}
-			ImGui::SameLine();
-			static bool init_sample2 = true;
-			if (ImGui::Button("Guassian Blur") || init_sample2) {
+			};
+
+			auto do_gaus_filtering = [&]() {
 				if (filterSize == 7) {
 					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, gausMask7x7);
 					if (averagedData.has_value()) {
@@ -227,35 +215,40 @@ namespace cs474 {
 						emscripten_log(EM_LOG_CONSOLE, "%d", success);
 					}
 				}
-				if (init_sample2) {
-					init_sample2 = false;
-				}
+			};
+
+			static bool init_sample = true;
+			if (init_sample) {
+				do_avg_filtering();
+				do_gaus_filtering();
+				init_sample = false;
 			}
 
-				std::vector<std::string> items = { "7x7", "15x15" };
-				static int item_current_idx = 0;
-				ImGui::SetNextItemWidth(100);
-				if (ImGui::BeginCombo("Filter Size", items[item_current_idx].c_str()))
+			std::vector<std::string> items = { "7x7", "15x15" };
+			static int item_current_idx = 0;
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("Avg Filter", items[item_current_idx].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items.size(); n++)
 				{
-					ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-					for (int n = 0; n < items.size(); n++)
-					{
-						const bool is_selected = (item_current_idx == n);
-						if (ImGui::Selectable(items[n].c_str(), is_selected)) {
-							item_current_idx = n;
-							if (items[n] == "7x7") {
-								filterSize = 7;
-							}
-							else {
-								filterSize = 15;
-							}
+					const bool is_selected = (item_current_idx == n);
+					if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+						item_current_idx = n;
+						if (items[n] == "7x7") {
+							filterSize = 7;
 						}
-						if (is_selected)
-							ImGui::SetItemDefaultFocus();
+						else {
+							filterSize = 15;
+						}
+						do_avg_filtering();
 					}
-					ImGui::EndCombo();
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
 				}
-				ImGui::End();
+				ImGui::EndCombo();
+			}
+			ImGui::End();
 			}
 		}
 	void AssignmentTest2::Question3() {

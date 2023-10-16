@@ -9,7 +9,7 @@ namespace cs474 {
 	{
 
 	}
-	std::vector<uint8_t> normr(const std::vector<uint8_t>& data)
+	std::vector<uint8_t> normr(const std::vector<float>& data)
 	{
 		// First pass: Identify min and max values in the output_data
 		int min_val = INT_MAX;
@@ -326,5 +326,112 @@ namespace cs474 {
 			}
 		}
 		return { result };
+	}
+	std::vector<float> convolve(const std::vector<uint8_t>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height)
+	{
+		std::vector<float> convolution(image_width * image_height, 0.0f);
+
+		for (int i = 0; i < image_height; ++i) {
+			for (int j = 0; j < image_width; ++j) {
+				std::vector<uint8_t> image_patch;
+
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						int image_i = i + mi - mask_height / 2;
+						int image_j = j + mj - mask_width / 2;
+
+						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
+							image_patch.push_back(data[image_i * image_width + image_j]);
+						}
+						else {
+							image_patch.push_back(0);
+						}
+					}
+				}
+				convolution[i * image_width + j] = std::accumulate(image_patch.begin(), image_patch.end(), 0);
+			}
+		}
+		return convolution;
+	}
+	std::vector<float> gradient_magnitude(const std::vector<float>& dataX, const std::vector<float>& dataY, int image_width, int image_height)
+	{
+		std::vector<float> magnitude(image_width * image_height);
+
+		for (int i = 0; i < image_width * image_height; ++i) {
+			magnitude[i] = std::sqrt(dataX[i] * dataX[i] + dataY[i] * dataY[i]);
+		}
+
+		return magnitude;
+	}
+
+	std::vector<uint8_t> sharpen(const std::vector<uint8_t>& data, const std::vector<uint8_t>& edges, int image_width, int image_height)
+	{
+		std::vector<uint8_t> sharpened(image_width * image_height);
+
+		for (int i = 0; i < image_width * image_height; ++i) {
+			uint8_t val = data[i] - edges[i];
+			sharpened[i] = std::clamp(val, (uint8_t)0, (uint8_t)255);
+		}
+
+		return sharpened;
+	}
+
+	std::vector<uint8_t> clamp_overflow_to_uint8_max(std::vector<float>& data)
+	{
+		std::vector<uint8_t> result(data.size());
+		std::transform(data.begin(), data.end(), result.begin(), [](float val) -> uint8_t {
+			return static_cast<uint8_t>(std::min(255.0f, val));
+		});
+		return result;
+	}
+	std::vector<uint8_t> to_uint8_max(std::vector<float>& data)
+	{
+		std::vector<uint8_t> result(data.size());
+		std::transform(data.begin(), data.end(), result.begin(), [](float val) -> uint8_t {
+			return static_cast<uint8_t>(std::clamp(val, 0.0f, 255.0f));
+			});
+		return result;
+	}
+	std::vector<uint8_t> visualize_partials(const std::vector<float>& dataX)
+	{
+		int max_dx = *std::max_element(dataX.begin(), dataX.end());
+		int min_dx = *std::min_element(dataX.begin(), dataX.end());
+
+		std::vector<uint8_t> rgba;
+
+		for (size_t i = 0; i < dataX.size(); ++i) {
+			// Convert Gx and Gy to [0, 255]
+			uint8_t normalizedDx = static_cast<uint8_t>(255.0 * (dataX[i] - min_dx) / (max_dx - min_dx));
+
+			// Gradient magnitude for alpha
+			uint8_t alpha = static_cast<uint8_t>(255.0 * std::sqrt(dataX[i] * dataX[i]) / std::sqrt(max_dx * max_dx));
+				
+			rgba.push_back(255);
+			rgba.push_back(255);
+			rgba.push_back(255);
+			rgba.push_back(normalizedDx);
+		}
+
+		return rgba;
+	}
+	std::vector<uint8_t> flip(const std::vector<uint8_t>& dataX)
+	{
+		std::vector<uint8_t> result(dataX.size());
+		std::transform(dataX.begin(), dataX.end(), result.begin(), [](uint8_t val) -> uint8_t {
+			return std::clamp(255 - val, 0 ,255);
+			});
+		return result;
+	}
+	std::vector<uint8_t> threshold(const std::vector<uint8_t>& data, int thresholdValue, bool above = true) {
+		std::vector<uint8_t> output(data.size(), 0);  // initialize to black
+
+		// Compute gradient magnitudes
+		for (size_t i = 0; i < data.size(); ++i) {
+			if (((above) ? (data[i] > thresholdValue) : (data[i] < thresholdValue))) {
+				output[i] = 255;  // set to white if above threshold
+			}
+		}
+
+		return output;
 	}
 } // namespace cs474
