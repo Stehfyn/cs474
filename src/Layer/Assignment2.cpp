@@ -74,8 +74,14 @@ void Assignment2::Question1() {
 	const std::optional<graphics::Texture>& filt_opt = image_registry->GetTexture("ImagePadded", "filt");
 	if (og_opt.has_value()) {
 		const auto& style = ImGui::GetStyle();
+		ImVec2 start = ImGui::GetCursorScreenPos();
+		ImVec2 start_pos(start.x + 28, start.y + 52);
+		ImVec2 start_text(start.x + 28, start.y + 52 - ImGui::GetFontSize());
+		ImVec2 end_pos(start_pos.x + 84, start_pos.y + 53);
 		ImGui::Image((void*)(intptr_t)(og_opt.value()->GetRendererID()), ImVec2(444, 333));
 		//ImGui::Image((void*)(intptr_t)(filt_opt.value()->GetRendererID()), ImVec2(444, 333));
+		ImGui::GetForegroundDrawList()->AddRect(start_pos, end_pos, ImU32(0xff0000ff));
+		ImGui::GetForegroundDrawList()->AddText(start_text, ImU32(0xff0000ff), "Mask");
 	}
 	static float size = 32.0f;
 	static float thickness = 8.0f;
@@ -85,6 +91,7 @@ void Assignment2::Question1() {
 		ImGui::SameLine();
 		inspect_filt = widgets::ImageInspector("inspectfilt", filt_opt.value(), &inspect_filt, { 0.0f, 0.0f }, { style.ItemSpacing.x + 444, 0.0f });
 		inspect_filt = false;
+
 	}
 	else { 
 		TryMakeSpatialFilteringTexture(false);
@@ -607,8 +614,9 @@ void Assignment2::Question5() {
 	const std::optional<graphics::Texture>& sf_opt = image_registry->GetTexture("sf", ".pgm");
 	static bool do_again = false;
 	static bool above = false;
-	static float thresh = 20.0f;
-	if (ImGui::SliderFloat("thresh", &thresh, 1.0f, 255.0f) || ImGui::Checkbox("above", &above)) {
+	static float threshx = 0.6f;
+	static float threshy = 0.7f;
+	if (ImGui::InputFloat("threshx", &threshx) || ImGui::InputFloat("threshy", &threshy) || ImGui::Checkbox("above", &above)) {
 		do_again = true;
 	}
 	if (lenna_opt.has_value() && sf_opt.has_value()) {
@@ -643,6 +651,8 @@ void Assignment2::Question5() {
 			auto magnitude = gradient_magnitude(prewitt_x, prewitt_y, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight());
 			auto m2 = to_uint8_max(magnitude);
 			std::vector<uint8_t> normed = normr(magnitude);
+			std::vector<uint8_t> normedt = threshold_range(normed, (int)(threshx * 255), (int)(threshy * 255), above);
+
 			//auto magnitude2 = threshold(normed, (int)thresh, above);
 			auto partials1 = normr(prewitt_x);
 			//auto partials1 = to_uint8_max(prewitt_x);
@@ -653,14 +663,13 @@ void Assignment2::Question5() {
 
 			image_registry->AddTexture("lenna", "prewitt-partials1", graphics::make_texture(partials1, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 			image_registry->AddTexture("lenna", "prewitt-partials2", graphics::make_texture(partials2, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
-			image_registry->AddTexture("lenna", "prewitt", graphics::make_texture(normed, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+			image_registry->AddTexture("lenna", "prewitt", graphics::make_texture(normedt, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 			do_again = false;
 		}
 		
 
 		inspect_lap1 = false;
 		inspect_lap2 = false;
-		
 		
 		
 		

@@ -434,4 +434,20 @@ namespace cs474 {
 
 		return output;
 	}
+	std::vector<uint8_t> threshold_range(const std::vector<uint8_t>& data, int min, int max, bool flip = false)
+	{
+		std::vector<uint8_t> output(data.size(), 0);  // initialize to black
+
+		// Compute gradient magnitudes
+		for (size_t i = 0; i < data.size(); ++i) {
+			if ((data[i] >= min) && (data[i] <= max)) {
+				output[i] = (flip) ? 255 : 0;  // set to white if above threshold
+			}
+			else {
+				output[i] = (flip) ? 0 : 255;
+			}
+		}
+
+		return output;
+	}
 } // namespace cs474

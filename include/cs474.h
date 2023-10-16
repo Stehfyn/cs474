@@ -42,4 +42,5 @@ namespace cs474 {
 	std::vector<uint8_t> visualize_partials(const std::vector<float>& dataX);
 	std::vector<uint8_t> flip(const std::vector<uint8_t>& dataX);
 	std::vector<uint8_t> threshold(const std::vector<uint8_t>& data, int thresholdValue, bool above);
+	std::vector<uint8_t> threshold_range(const std::vector<uint8_t>& data, int min, int max, bool flip);
 } // namespace cs474
