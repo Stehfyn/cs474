@@ -1,7 +1,40 @@
 #include "..\cs474.pch.h"
 #include "Base.h"
 #include "..\Widgets\Markdown.h"
+
+void do_frame(void* void_fn_ptr) {
+    auto* fn_ptr = reinterpret_cast<std::function<void()>*>(void_fn_ptr);
+    if (fn_ptr) {
+        auto& fn = *fn_ptr;
+        fn();
+    }
+}
+
 namespace cs474 {
+void do_filter()
+{
+    emscripten_log(EM_LOG_CONSOLE, "still checkin");
+    std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
+    const std::optional<graphics::Texture>& img_opt_padded = image_registry->GetTexture("ImagePadded", ".pgm");
+    const std::optional<graphics::Texture>& pat_opt_padded = image_registry->GetTexture("PatternPadded", ".pgm");
+    static bool one_attempt = true;
+    if (img_opt_padded.has_value() && one_attempt)
+    {
+        one_attempt = false;
+        const auto& padded = img_opt_padded.value();
+        const auto& patPadded = pat_opt_padded.value();
+        emscripten_log(EM_LOG_CONSOLE, "can access image_reg");
+        auto filtered = spatial_filtering(padded->GetRawData(), padded->GetWidth(), padded->GetHeight(), patPadded->GetRawData(), patPadded->GetWidth(), patPadded->GetHeight());
+        emscripten_log(EM_LOG_CONSOLE, "processed: {%zu}", filtered.size());
+        global::AddResource("filtered_thread_data", filtered);
+        const std::vector<float>& opt_filtered = global::GetResourceUnwrapped("filtered_thread_data");
+        if (padded->GetRawData().size() == opt_filtered.size() == filtered.size()) {
+            emscripten_log(EM_LOG_CONSOLE, "data is valid");
+        }
+        emscripten_log(EM_LOG_CONSOLE, "og: {%zu} filtered: {%zu}, fetched: {%zu}", padded->GetRawData().size(), filtered.size(), opt_filtered.size());
+    }
+}
+
 Base::Base() {
 }
 Base::~Base() {
@@ -10,6 +43,11 @@ void Base::OnAttach() {
     this->LoadImages();
     global::AddResource("g_ShowAssignment1", false);
     utils::fetch_bytes("readme", "https://raw.githubusercontent.com/stehfyn/cs474/main/README.md");
+    emscripten_wasm_worker_t worker1 = emscripten_malloc_wasm_worker(/*stackSize: */1024);
+    emscripten_wasm_worker_t worker2 = emscripten_malloc_wasm_worker(/*stackSize: */1024);
+    int x = 0, y = 0;
+    //emscripten_wasm_worker_post_function_sig(worker1, reinterpret_cast<std::function<void(int, int)>*>(&printxy), "void(int,int)", x, y);
+    emscripten_wasm_worker_post_function_sig(worker2, reinterpret_cast<std::function<void()>*>(&do_filter), "void()");
 }
 void Base::OnDetach() {
 }
@@ -23,7 +61,7 @@ void Base::OnUIRender() {
     if (global::GetResourceUnwrapped("g_FirstFrame")) {
         this->BuildDockspace();
     }
-    
+    //emscripten_get_work
     this->DoTableOfContents();
     this->DoLandingPage();
     //this->DoWidgetPanel();

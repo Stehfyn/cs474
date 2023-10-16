@@ -15,6 +15,7 @@ if not exist "%~1\" (
 )
 
 xcopy src\index.html "%~1\" /y /d
+xcopy src\enable-threads.js "%~1\" /y /d
 
 popd
 endlocal

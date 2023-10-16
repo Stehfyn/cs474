@@ -9,7 +9,24 @@ namespace cs474 {
 	{
 
 	}
+	std::vector<uint8_t> normr(const std::vector<uint8_t>& data)
+	{
+		// First pass: Identify min and max values in the output_data
+		int min_val = INT_MAX;
+		int max_val = INT_MIN;
+		
+		for (const auto& p : data) {
+			if (p < min_val) min_val = p;
+			if (p > max_val) max_val = p;
+		}
 
+		std::vector<uint8_t> out_data(data.size());
+		for (int i = 0; i < data.size(); ++i) {
+			out_data[i] = ((data[i] - min_val) * 255) / (max_val - min_val);
+		}
+
+		return out_data;
+	}
 
 	std::optional<std::vector<uint8_t>> subSample(const std::vector<uint8_t>& rawData, int factor, int width, int height)
 	{
@@ -152,5 +169,61 @@ namespace cs474 {
 		}
 
 		return { specifiedData };
+	}
+	float computeNCC(const std::vector<uint8_t>& image_patch,
+		const std::vector<uint8_t>& mask)
+	{
+		float mean_image = 0.0f;
+		float mean_mask = 0.0f;
+
+		for (size_t i = 0; i < image_patch.size(); ++i) {
+			mean_image += image_patch[i];
+			mean_mask += mask[i];
+		}
+
+		mean_image /= image_patch.size();
+		mean_mask /= mask.size();
+
+		float numerator = 0.0f;
+		float denominator_image = 0.0f;
+		float denominator_mask = 0.0f;
+
+		for (size_t i = 0; i < image_patch.size(); ++i) {
+			float diff_image = image_patch[i] - mean_image;
+			float diff_mask = mask[i] - mean_mask;
+
+			numerator += diff_image * diff_mask;
+			denominator_image += diff_image * diff_image;
+			denominator_mask += diff_mask * diff_mask;
+		}
+
+		return numerator / std::sqrt(denominator_image * denominator_mask);
+	}
+	std::vector<float> spatial_filtering(const std::vector<uint8_t>& image_data, int image_width, int image_height, const std::vector<uint8_t>& mask_data, int mask_width, int mask_height)
+	{
+
+		std::vector<float> similarity(image_width * image_height, 0.0f);
+
+		for (int i = 0; i < image_height; ++i) {
+			for (int j = 0; j < image_width; ++j) {
+				std::vector<uint8_t> image_patch;
+
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						int image_i = i + mi - mask_height / 2;
+						int image_j = j + mj - mask_width / 2;
+						
+						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
+							image_patch.push_back(image_data[image_i * image_width + image_j]);
+						}
+						else {
+							image_patch.push_back(0);
+						}
+					}
+				}
+				similarity[i * image_width + j] = computeNCC(image_patch, mask_data);
+			}
+		}
+		return similarity;
 	}
 } // namespace cs474
