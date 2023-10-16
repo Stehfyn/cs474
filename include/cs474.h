@@ -16,10 +16,10 @@ namespace cs474 {
 	std::vector<uint8_t> norm(const std::vector<float>& data, int total_pixels);
 	std::vector<uint8_t> hist_eq(const std::vector<uint8_t>& data, int width, int height);
 	std::optional<std::vector<uint8_t>> hist_spec(const std::vector<uint8_t>& srcData, const std::vector<uint8_t>& specData, int width, int height);
+	std::vector<float> spatial_filtering(const std::vector<uint8_t>& image_data, int image_width, int image_height, const std::vector<uint8_t>& mask_data, int mask_width, int mask_height);
 	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask);
 	std::optional <std::vector<uint8_t>> addNoise(const std::vector<uint8_t>& data, int width, int height, float percentage);
 	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize);
 	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& originaldata, const std::vector<uint8_t>& blurredData, int width, int height, int kValue);
-	std::vector<float> spatial_filtering(const std::vector<uint8_t>& image_data, int image_width, int image_height, const std::vector<uint8_t>& mask_data, int mask_width, int mask_height);
 
 } // namespace cs474
