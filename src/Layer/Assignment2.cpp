@@ -605,7 +605,12 @@ void Assignment2::Question5() {
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	const std::optional<graphics::Texture>& lenna_opt = image_registry->GetTexture("lenna", ".pgm");
 	const std::optional<graphics::Texture>& sf_opt = image_registry->GetTexture("sf", ".pgm");
-
+	static bool do_again = false;
+	static bool above = false;
+	static float thresh = 20.0f;
+	if (ImGui::SliderFloat("thresh", &thresh, 1.0f, 255.0f) || ImGui::Checkbox("above", &above)) {
+		do_again = true;
+	}
 	if (lenna_opt.has_value() && sf_opt.has_value()) {
 		const auto& style = ImGui::GetStyle();
 		const auto& img_lenna = lenna_opt.value();
@@ -620,8 +625,8 @@ void Assignment2::Question5() {
 		const std::optional<graphics::Texture>& lenna_prewitt_opt = image_registry->GetTexture("lenna", "prewitt");
 		const std::optional<graphics::Texture>& lenna_prewitt_partials1_opt = image_registry->GetTexture("lenna", "prewitt-partials1");
 		const std::optional<graphics::Texture>& lenna_prewitt_partials2_opt = image_registry->GetTexture("lenna", "prewitt-partials2");
-
-		if (lenna_prewitt_opt.has_value() && lenna_prewitt_partials1_opt.has_value() && lenna_prewitt_partials2_opt.has_value()) {
+		
+		if (lenna_prewitt_opt.has_value() && lenna_prewitt_partials1_opt.has_value() && lenna_prewitt_partials2_opt.has_value() && (!do_again)) {
 			const auto& img_lenna_prewitt = lenna_prewitt_opt.value();
 			const auto& img_lenna_prewitt_partials1 = lenna_prewitt_partials1_opt.value();
 			const auto& img_lenna_prewitt_partials2 = lenna_prewitt_partials2_opt.value();
@@ -630,25 +635,29 @@ void Assignment2::Question5() {
 			is_hovered_lap12 = widgets::ImageInspector("inspect_lap13", img_lenna_prewitt_partials2, &inspect_lap1, { 0.0f, 0.0f }, { /*x_off_coeff **/ (style.ItemSpacing.x + img_lenna->GetWidth()), 0.0f });
 			ImGui::SameLine();
 			is_hovered_lap13 = widgets::ImageInspector("inspect_lap14", img_lenna_prewitt, &inspect_lap1, { 0.0f, 0.0f }, { /*x_off_coeff **/ (style.ItemSpacing.x + img_lenna->GetWidth()), 0.0f });
-			ImGui::SameLine();
+			//ImGui::SameLine();
 		}
 		else {
 			std::vector<float> prewitt_x = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), prewittHorz, 3, 3);
 			std::vector<float> prewitt_y = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), prewittVert, 3, 3);
 			auto magnitude = gradient_magnitude(prewitt_x, prewitt_y, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight());
+			auto m2 = to_uint8_max(magnitude);
 			std::vector<uint8_t> normed = normr(magnitude);
-			auto magnitude2 = threshold(normed, 20, false);
-			auto partials1 = flip(normr(prewitt_x));
+			//auto magnitude2 = threshold(normed, (int)thresh, above);
+			auto partials1 = normr(prewitt_x);
 			//auto partials1 = to_uint8_max(prewitt_x);
 			////auto partials1 = visualize_partials(prewitt_x);
 			//auto partials2 = to_uint8_max(prewitt_y);
-			auto partials2 = flip(normr(prewitt_y));
+			auto partials2 = normr(prewitt_y);
 			//auto partials2 = visualize_partials(prewitt_y);
 
 			image_registry->AddTexture("lenna", "prewitt-partials1", graphics::make_texture(partials1, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 			image_registry->AddTexture("lenna", "prewitt-partials2", graphics::make_texture(partials2, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
-			image_registry->AddTexture("lenna", "prewitt", graphics::make_texture(magnitude2, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+			image_registry->AddTexture("lenna", "prewitt", graphics::make_texture(normed, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+			do_again = false;
 		}
+		
+
 		inspect_lap1 = false;
 		inspect_lap2 = false;
 		

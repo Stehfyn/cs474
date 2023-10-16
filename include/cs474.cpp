@@ -341,7 +341,7 @@ namespace cs474 {
 						int image_j = j + mj - mask_width / 2;
 
 						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
-							image_patch.push_back(data[image_i * image_width + image_j]);
+							image_patch.push_back(data[image_i * image_width + image_j] * mask[mi * mask_width + mj]);
 						}
 						else {
 							image_patch.push_back(0);
