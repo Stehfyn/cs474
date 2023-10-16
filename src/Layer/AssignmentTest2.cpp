@@ -18,17 +18,15 @@ namespace cs474 {
 	}
 
 	void AssignmentTest2::OnUIRender() {
-		this->Question1();
-		/*
-		this->Question2();
-		this->Question3();
+		//this->Question3();
+		//this->Question1();
+		//this->Question2();
 		this->Question4();
-		*/
 	}
 	void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
 
-		ImVec2 size = { 1000, 480 };
+		ImVec2 size = { 640, 480 };
 		ImGui::SetNextWindowSize(size);
 
 		ImVec2 pos = { 200, 0 };
@@ -36,39 +34,36 @@ namespace cs474 {
 
 		ImGui::Begin("Question1");
 		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
-		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("ImagePadded", ".pgm");
+		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
 
 		if (img_opt.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			//bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
 
-			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("PatternPadded", ".pgm");
+			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "sub");
 
 			if (sub_opt.has_value()) {
 				const auto& img_sub = sub_opt.value();
-				//ImVec2 img_sub_size{(float)img_sub->GetWidth(),(float)img_sub->GetHeight() };
 				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				//bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				//if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
-				ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
 			}
 			else {
-
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
-			ImGui::Text("Original: %zu %zu", img->GetWidth(), img->GetHeight());
+			ImGui::Text("Original: ");
 			ImGui::SameLine();
 
 			//ImGui::Dummy(,)
-			ImGui::Text("%zu", rawData.size());
 
 			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
@@ -95,19 +90,19 @@ namespace cs474 {
 			}
 
 			//Creating a Combo menu for the factor choices
-			std::vector<std::string> items = { "pattern" };
+			int items[] = { 1,2,4,8 };
 			static int item_current_idx = 0;
 			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Original Image", items[item_current_idx].c_str()))
+			if (ImGui::BeginCombo("Factor", std::to_string(items[item_current_idx]).c_str()))
 			{
 				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < items.size(); n++)
+				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
 				{
 					const bool is_selected = (item_current_idx == n);
-					if (ImGui::Selectable(items[n].c_str(), is_selected))
+					if (ImGui::Selectable(std::to_string(items[n]).c_str(), is_selected))
 					{
 						item_current_idx = n;
-						imageChoice = items[n].c_str();  // Or simply use items[n] if specifiedHisto is a std::string
+						this->factor = items[n];
 					}
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 					if (is_selected)
@@ -121,149 +116,377 @@ namespace cs474 {
 	void AssignmentTest2::Question2() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question2"));
 
-		ImVec2 size = { 640, 480 };
+		ImVec2 size = { 1200, 1200 };
 		ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200 + 640, 0 };
+		ImVec2 pos = { 200, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
 		ImGui::Begin("Question2");
 		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
 		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
 
+		std::vector<double> avgMask7x7(49, 1.0 / 49.0);
+		std::vector<double> avgMask15x15(225, 1.0 / 225.0);
+		std::vector<double> gausMask7x7 = {1,1,2,2,2,1,1,1,2,2,4,2,2,1,2,2,4,8,4,2,2,2,4,8,16,8,4,2,2,2,4,8,4,2,2,1,2,2,4,2,2,1,1,1,2,2,2,1,1};
+		std::vector<double> gausMask15x15 = {2,2,3,4,5,5,6,6,6,5,5,4,3,2,2,2,3,4,5,7,7,8,8,8,7,7,5,4,3,2,3,4,6,9,10,10,11,10,10,9,7,5,4,3,2,4,5,7,9,10,12,13,13,13,12,10,9,7,6,4,3,
+		5,7,9,11,13,14,15,16,15,14,13,11,9,7,5,5,7,10,12,14,16,17,18,17,16,14,12,10,7,5,6,8,10,13,15,17,19,19,19,17,15,13,10,8,6,6,8,11,13,15,17,19,20,19,18,16,13,11,8,6,6,8,10,13,15,17,19,19,19,17,15,13,10,8,6,
+		5,7,10,12,14,16,17,18,17,16,14,12,10,7,5,5,7,9,11,13,14,15,16,15,14,13,11,9,7,5,4,5,7,9,10,12,13,13,13,12,10,9,7,6,4,3,3,4,6,9,10,10,11,10,10,9,7,5,4,3,2,2,3,4,5,7,7,8,8,8,7,7,5,4,3,2,2,2,3,4,5,5,6,6,6,5,5,4,3,2,2};
+
 		if (img_opt.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			bool is_hovered1 = widgets::ImageInspector("inspect3", img, &inspect_quant, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
+			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "average");
 
-			const std::optional<graphics::Texture>& quant_opt = image_registry->GetTexture("lenna", "quant");
+			if (sub_opt.has_value()) {
+				const auto& img_sub = sub_opt.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+			ImGui::SameLine();
 
-			if (quant_opt.has_value()) {
-				const auto& img_quant = quant_opt.value();
-				ImVec2 img_quant_size{ (float)img_quant->GetWidth(), (float)img_quant->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect4", img_quant, &inspect_quant, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_quant->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_quant = false;
-				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+			const std::optional<graphics::Texture>& sub_opt_blur = image_registry->GetTexture("lenna", "blur");
+
+			if (sub_opt_blur.has_value()) {
+				const auto& img_sub = sub_opt_blur.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect3", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
 			}
 			else {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
 			ImGui::Text("Original: ");
-			ImGui::SameLine();
 
-			//ImGui::Dummy(,)
+			ImGui::SameLine();
 
 			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
-			ImGui::Text("Processed: ");
+			ImGui::Text("Averaged: ");
+
+			ImGui::SameLine();
+
+			float x_offset2 = 3 * style.ItemSpacing.x + ((float)img->GetWidth()*2 - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset2);
+			ImGui::Text("Guassian Blurred: ");
 
 
 			ImGui::Separator();
 
-			static bool init_quant = true;
-
-			auto do_quantize = [&]() {
-				auto quantized = quantize(rawData, (uint8_t)levels, img->GetWidth(), img->GetHeight());
-				if (quantized.has_value()) {
-					auto data = quantized.value();
-					bool success = image_registry->AddTexture("lenna", "quant", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
-					emscripten_log(EM_LOG_CONSOLE, "%d", success);
-				}
-				if (init_quant) {
-					init_quant = false;
-				}
-			};
-
-			if (ImGui::Button("Quantize") || init_quant) {
-				do_quantize();
-			}
-
-			//Creating a Combo menu for the factor choices
-			int items[] = { (int)((uint8_t)-1),128,32,8,2};
-			static int item_current_idx = 0;
-			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Levels", std::to_string(items[item_current_idx]).c_str()))
-			{
-				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-				{
-					const bool is_selected = (item_current_idx == n);
-					if (ImGui::Selectable(std::to_string(items[n]).c_str(), is_selected))
-					{
-						item_current_idx = n;
-						this->levels = items[n];
-						do_quantize();
+			static bool init_sample = true;
+			if (ImGui::Button("Average") || init_sample) {
+				if (filterSize == 7) {
+					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, avgMask7x7);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
 					}
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
 				}
-				ImGui::EndCombo();
+				else {
+					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, avgMask15x15);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample) {
+					init_sample = false;
+				}
+			}
+			ImGui::SameLine();
+			static bool init_sample2 = true;
+			if (ImGui::Button("Guassian Blur") || init_sample2) {
+				if (filterSize == 7) {
+					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, gausMask7x7);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "blur", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				else {
+					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, gausMask15x15);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "blur", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample2) {
+					init_sample2 = false;
+				}
 			}
 
-			if (ImGui::SliderFloat("##Levels", &levels, 2.0f, (float)(uint8_t)-1, "%.0f")) {
-				do_quantize();
+				std::vector<std::string> items = { "7x7", "15x15" };
+				static int item_current_idx = 0;
+				ImGui::SetNextItemWidth(100);
+				if (ImGui::BeginCombo("Filter Size", items[item_current_idx].c_str()))
+				{
+					ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+					for (int n = 0; n < items.size(); n++)
+					{
+						const bool is_selected = (item_current_idx == n);
+						if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+							item_current_idx = n;
+							if (items[n] == "7x7") {
+								filterSize = 7;
+							}
+							else {
+								filterSize = 15;
+							}
+						}
+						if (is_selected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+				ImGui::End();
 			}
-			
 		}
-		ImGui::End();
-	}
 	void AssignmentTest2::Question3() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question3"));
 
-		ImVec2 size = { 640, 480 };
+		ImVec2 size = { 1200, 480 };
 		ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200, 480 };
+		ImVec2 pos = { 200, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
 		ImGui::Begin("Question3");
 		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
-		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("f_16", ".pgm");
+		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
+
+		std::vector<double> avgMask7x7(49, 1.0 / 49.0);
+		std::vector<double> avgMask15x15(225, 1.0 / 225.0);
 
 		if (img_opt.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& img = img_opt.value();
 			const std::vector<uint8_t>& rawData = img->GetRawData();
 			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			bool is_hovered1 = widgets::ImageInspector("inspect5", img, &inspect_eq, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 			ImGui::SameLine();
 
 			// Computed image
+			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "salty");
+			const std::optional<graphics::Texture>& sub_median = image_registry->GetTexture("lenna", "median");
+			const std::optional<graphics::Texture>& sub_average = image_registry->GetTexture("lenna", "average");
 
-			const std::optional<graphics::Texture>& eq_opt = image_registry->GetTexture("f_16", "eq");
-
-			if (eq_opt.has_value()) {
-				const auto& img_eq = eq_opt.value();
-				ImVec2 img_eq_size{ (float)img_eq->GetWidth(), (float)img_eq->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect6", img_eq, &inspect_eq, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_eq->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_eq = false;
-				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+			if (sub_opt.has_value()) {
+				const auto& img_sub = sub_opt.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
 			}
 			else {
-				auto equalized = hist_eq(rawData, img->GetWidth(), img->GetHeight());
-				bool success = image_registry->AddTexture("f_16", "eq", graphics::make_texture(equalized, img->GetWidth(), img->GetHeight(), 1));
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
+			ImGui::SameLine();
+
+			if (sub_median.has_value()) {
+				const auto& img_sub = sub_median.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect3", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
+			ImGui::SameLine();
+
+			if (sub_average.has_value()) {
+				const auto& img_sub = sub_average.value();
+				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+				bool is_hovered2 = widgets::ImageInspector("inspect4", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
 			ImGui::Text("Original: ");
-			ImGui::SameLine();
 
-			//ImGui::Dummy(,)
+			ImGui::SameLine();
 
 			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
-			ImGui::Text("Equalized: ");
+			ImGui::Text("Salt And Pepper: ");
 
+			ImGui::SameLine();
+
+			float x_offset2 = 3 * style.ItemSpacing.x + ((float)img->GetWidth()*2 - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset2);
+			ImGui::Text("Median Filtered: ");
+
+			ImGui::SameLine();
+
+			float x_offset3 = 4 * style.ItemSpacing.x + ((float)img->GetWidth() * 3 - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset3);
+			ImGui::Text("Average Filtered: ");
+
+			ImGui::Separator();
+
+			static bool init_sample = true;
+			if (ImGui::Button("Salt And Pepper") || init_sample) {
+					auto averagedData = addNoise(img->GetRawData(), img->GetWidth(), img->GetHeight(), percentSaltPep);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "salty", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				if (init_sample) {
+					init_sample = false;
+				}
+			}
+			ImGui::SameLine();
+
+			//Creating a Combo menu for the factor choices
+			std::vector<std::string> items = {"30%", "50%"};
+			static int item_current_idx = 0;
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("% Salt and Pepper", items[item_current_idx].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items.size(); n++)
+				{
+					const bool is_selected = (item_current_idx == n);
+					if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+						item_current_idx = n;
+						if (items[n] == "30%") {
+							percentSaltPep = 30.0;
+						}
+						else {
+							percentSaltPep = 50.0;
+						}
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Separator();
+
+			static bool init_sample2 = true;
+			if (ImGui::Button("Median Filtered") || init_sample2) {
+				const std::optional<graphics::Texture>& sub_optNew = image_registry->GetTexture("lenna", "salty");
+				if (filterSize == 7) {
+					auto medianData = medianFilter(sub_optNew.value()->GetRawData(), sub_optNew.value()->GetWidth(), sub_optNew.value()->GetHeight(), 7);
+					if (medianData.has_value()) {
+						auto data = medianData.value();
+						bool success = image_registry->AddTexture("lenna", "median", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				else {
+					auto medianData = medianFilter(sub_optNew.value()->GetRawData(), sub_optNew.value()->GetWidth(), sub_optNew.value()->GetHeight(), 15);
+					if (medianData.has_value()) {
+						auto data = medianData.value();
+						bool success = image_registry->AddTexture("lenna", "median", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample2) {
+					init_sample2 = false;
+				}
+			}
+
+			ImGui::SameLine();
+
+			std::vector<std::string> items2 = {"7x7", "15x15"};
+			static int item_current_idx2 = 0;
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("Median Filter Size", items2[item_current_idx2].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items2.size(); n++)
+				{
+					const bool is_selected = (item_current_idx2 == n);
+					if (ImGui::Selectable(items2[n].c_str(), is_selected)) {
+						item_current_idx2 = n;
+						if (items2[n] == "7x7") {
+							filterSize = 7;
+						}
+						else {
+							filterSize = 15;
+						}
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Separator();
+
+			static bool init_sample3 = true;
+			if (ImGui::Button("Average Filtering") || init_sample3) {
+				const std::optional<graphics::Texture>& sub_optNew = image_registry->GetTexture("lenna", "median");
+				if (filterSizeAvg == 7) {
+					auto averagedData = smoothImage(sub_optNew.value()->GetRawData(), sub_optNew.value()->GetWidth(), sub_optNew.value()->GetHeight(), filterSizeAvg, avgMask7x7);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				else {
+					auto medianData = smoothImage(sub_optNew.value()->GetRawData(), sub_optNew.value()->GetWidth(), sub_optNew.value()->GetHeight(), filterSizeAvg, avgMask15x15);
+					if (medianData.has_value()) {
+						auto data = medianData.value();
+						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample3) {
+					init_sample3 = false;
+				}
+			}
+			ImGui::SameLine();
+
+
+			static int item_current_idx3 = 0;
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("Average Filter Size", items2[item_current_idx3].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items2.size(); n++)
+				{
+					const bool is_selected = (item_current_idx3 == n);
+					if (ImGui::Selectable(items2[n].c_str(), is_selected)) {
+						item_current_idx3 = n;
+						if (items2[n] == "7x7") {
+							filterSizeAvg = 7;
+						}
+						else {
+							filterSizeAvg = 15;
+						}
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Separator();
+
+			ImGui::End();
 		}
-		ImGui::End();
 	}
 	void AssignmentTest2::Question4() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question4"));
@@ -296,7 +519,7 @@ namespace cs474 {
 				const auto& img_sub = spec_opt.value();
 				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
 				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_spec, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_spec= false;
+				if ((!is_hovered1) && (!is_hovered2)) inspect_spec = false;
 				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
 			}
 			else {
@@ -314,7 +537,7 @@ namespace cs474 {
 
 
 			ImGui::Separator();
-			
+
 			static bool init_sample = true;
 			if (ImGui::Button("Histogram Specification") || init_sample) {
 				const auto& specHistoImgData = specHisto_opt.value();
@@ -331,11 +554,11 @@ namespace cs474 {
 				if (init_sample) {
 					init_sample = false;
 				}
-				
+
 			}
 
 			//Creating a Combo menu for the factor choices
-			std::vector<std::string> items = {"boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
+			std::vector<std::string> items = { "boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
 			static int item_current_idx = 0;
 			ImGui::SetNextItemWidth(100);
 			if (ImGui::BeginCombo("Original Image", items[item_current_idx].c_str()))
@@ -357,7 +580,7 @@ namespace cs474 {
 			}
 
 			//Creating a Combo menu for the factor choices
-			std::vector<std::string> items2 = {"boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax"};
+			std::vector<std::string> items2 = { "boat", "aerial", "f_16", "lenna", "tools", "peppers", "sf", "wheel", "lax" };
 			static int item_current_idx2 = 0;
 			ImGui::SetNextItemWidth(100);
 			if (ImGui::BeginCombo("Specified Histogram", items2[item_current_idx2].c_str()))

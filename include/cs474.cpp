@@ -1,4 +1,5 @@
 #include "cs474.h"
+
 // cs474-lib.cpp : Defines the functions for the static library.
 //
 
@@ -152,23 +153,90 @@ namespace cs474 {
 		return { specifiedData };
 	}
 
-	std::vector<uint8_t> spatial_filtering(const std::vector<uint8_t>& image_data, int image_width, int image_height, const std::vector<uint8_t>& mask_data, int mask_width, int mask_height)
-	{
-		int output_width = image_width - mask_width + 1;
-		int output_height = image_height - mask_height + 1;
-		std::vector<uint8_t> output_data(output_width * output_height);
+	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask) {
 
-		for (int i = 0; i < output_height; ++i) {
-			for (int j = 0; j < output_width; ++j) {
-				int sum = 0;
-				for (int mi = 0; mi < mask_height; ++mi) {
-					for (int mj = 0; mj < mask_width; ++mj) {
-						sum += image_data[(i + mi) * image_width + (j + mj)] * mask_data[mi * mask_width + mj];
+		std::vector<uint8_t> smoothedData(width * height);
+		int offset = filterSize / 2;  // Offset to center the filter mask on a pixel
+
+		//Apply filter to each pixel
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				double sum = 0.0;
+				double weightSum = 0.0;
+
+				//Apply the filter mask to neighboring pixels
+				for (int j = -offset; j <= offset; ++j) {
+					for (int i = -offset; i <= offset; ++i) {
+						int newY = y + j;
+						int newX = x + i;
+
+						//Skip pixels outside the image boundaries
+						if (newX < 0 || newX >= width || newY < 0 || newY >= height) {
+							continue;
+						}
+						double weight = filterMask[(j + offset) * filterSize + (i + offset)];
+
+						sum += srcData[newY * width + newX] * weight;
+						weightSum += weight;
 					}
 				}
-				output_data[i * output_width + j] = sum;  // You might want to normalize this value
+				//Normalize and assign the new pixel value
+				smoothedData[y * width + x] = static_cast<uint8_t>(std::round(sum / weightSum));
 			}
 		}
-		return output_data;
+		return { smoothedData };
+	}
+
+	std::optional<std::vector<uint8_t>> addNoise(const std::vector<uint8_t>& data, int width, int height, float percentage) {
+		std::vector<uint8_t> corrupted = data;
+		int total_pixels = width * height;
+		int num_corrupted = static_cast<int>(percentage / 100.0 * total_pixels);
+
+		std::srand(std::time(nullptr));
+
+		for (int i = 0; i < num_corrupted; ++i) {
+			int rand_index = std::rand() % total_pixels;
+			uint8_t salt_or_pepper = (std::rand() % 2 == 0) ? 0 : 255;
+			corrupted[rand_index] = salt_or_pepper;
+		}
+
+		return { corrupted };
+	}
+
+	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize) {
+
+		std::vector<uint8_t> filtered(data.size());
+		int offset = filterSize / 2;
+
+		// Iterate over each pixel in the image
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				std::vector<uint8_t> neighbors;
+
+				// Collect neighbors
+				for (int x = -offset; x <= offset; ++x) {
+					for (int y = -offset; y <= offset; ++y) {
+						int ni = i + x;
+						int nj = j + y;
+
+						// Check boundary conditions
+						if (ni >= 0 && ni < height && nj >= 0 && nj < width) {
+							neighbors.push_back(data[ni * width + nj]);
+						}
+					}
+				}
+
+				// Find the median value among the neighbors
+				std::sort(neighbors.begin(), neighbors.end());
+				filtered[i * width + j] = neighbors[neighbors.size() / 2];
+			}
+		}
+
+		return { filtered };
+	}
+
+	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& data, int width, int height, int kValue, int filterSize)
+	{
+
 	}
 } // namespace cs474

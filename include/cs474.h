@@ -3,6 +3,7 @@
 #include <vector>
 #include <optional>
 #include <numeric>
+#include <functional>
 
 namespace cs474 {
 	void fcns474lib();
@@ -14,4 +15,7 @@ namespace cs474 {
 	std::vector<uint8_t> norm(const std::vector<float>& data, int total_pixels);
 	std::vector<uint8_t> hist_eq(const std::vector<uint8_t>& data, int width, int height);
 	std::optional<std::vector<uint8_t>> hist_spec(const std::vector<uint8_t>& srcData, const std::vector<uint8_t>& specData, int width, int height);
+	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask);
+	std::optional <std::vector<uint8_t>> addNoise(const std::vector<uint8_t>& data, int width, int height, float percentage);
+	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize);
 } // namespace cs474
