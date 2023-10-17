@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Layer\Assignment1.cpp" />
+    <ClCompile Include="Layer\Assignment2.cpp" />
     <ClCompile Include="Layer\AssignmentTest1.cpp" />
     <ClCompile Include="cs474-client.cpp" />
     <ClCompile Include="cs474.pch.cpp" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Layer\Assignment1.h" />
+    <ClInclude Include="Layer\Assignment2.h" />
     <ClInclude Include="Layer\AssignmentTest1.h" />
     <ClInclude Include="Global\ResourceManager.hpp" />
     <ClInclude Include="Graphics\Image.h" />
@@ -104,7 +106,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
@@ -137,7 +139,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>

@@ -9,7 +9,7 @@ namespace cs474 {
 	{
 
 	}
-	std::vector<uint8_t> normr(const std::vector<uint8_t>& data)
+	std::vector<uint8_t> normr(const std::vector<float>& data)
 	{
 		// First pass: Identify min and max values in the output_data
 		int min_val = INT_MAX;
@@ -225,5 +225,229 @@ namespace cs474 {
 			}
 		}
 		return similarity;
+	}
+
+	std::optional<std::vector<uint8_t>> smoothImage(const std::vector<uint8_t>& srcData, int width, int height, int filterSize, const std::vector<double>& filterMask) {
+
+		std::vector<uint8_t> smoothedData(width * height);
+		int offset = filterSize / 2;  // Offset to center the filter mask on a pixel
+
+		//Apply filter to each pixel
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				double sum = 0.0;
+				double weightSum = 0.0;
+
+				//Apply the filter mask to neighboring pixels
+				for (int j = -offset; j <= offset; ++j) {
+					for (int i = -offset; i <= offset; ++i) {
+						int newY = y + j;
+						int newX = x + i;
+
+						//Skip pixels outside the image boundaries
+						if (newX < 0 || newX >= width || newY < 0 || newY >= height) {
+							continue;
+						}
+						double weight = filterMask[(j + offset) * filterSize + (i + offset)];
+
+						sum += srcData[newY * width + newX] * weight;
+						weightSum += weight;
+					}
+				}
+				//Normalize and assign the new pixel value
+				smoothedData[y * width + x] = static_cast<uint8_t>(std::round(sum / weightSum));
+			}
+		}
+		return { smoothedData };
+	}
+
+	std::optional<std::vector<uint8_t>> addNoise(const std::vector<uint8_t>& data, int width, int height, float percentage) {
+		std::vector<uint8_t> corrupted = data;
+		int total_pixels = width * height;
+		int num_corrupted = static_cast<int>(percentage / 100.0 * total_pixels);
+
+		std::srand(std::time(nullptr));
+
+		for (int i = 0; i < num_corrupted; ++i) {
+			int rand_index = std::rand() % total_pixels;
+			uint8_t salt_or_pepper = (std::rand() % 2 == 0) ? 0 : 255;
+			corrupted[rand_index] = salt_or_pepper;
+		}
+
+		return { corrupted };
+	}
+
+	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize) {
+
+		std::vector<uint8_t> filtered(data.size());
+		int offset = filterSize / 2;
+
+		// Iterate over each pixel in the image
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				std::vector<uint8_t> neighbors;
+
+				// Collect neighbors
+				for (int x = -offset; x <= offset; ++x) {
+					for (int y = -offset; y <= offset; ++y) {
+						int ni = i + x;
+						int nj = j + y;
+
+						// Check boundary conditions
+						if (ni >= 0 && ni < height && nj >= 0 && nj < width) {
+							neighbors.push_back(data[ni * width + nj]);
+						}
+					}
+				}
+
+				// Find the median value among the neighbors
+				std::sort(neighbors.begin(), neighbors.end());
+				filtered[i * width + j] = neighbors[neighbors.size() / 2];
+			}
+		}
+
+		return { filtered };
+	}
+
+	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& originaldata, const std::vector<uint8_t>& blurredData, int width, int height, int kValue)
+	{
+		if (blurredData.size() != originaldata.size())
+			return std::nullopt;
+
+		std::vector<uint8_t> result(originaldata.size());
+
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				int maskVal = originaldata[i * width + j] - blurredData[i * width + j];
+				int newVal = originaldata[i * width + j] + static_cast<int>(kValue * maskVal);
+
+				newVal = std::max(0, std::min(newVal, 255));
+				result[i * width + j] = static_cast<uint8_t>(newVal);
+			}
+		}
+		return { result };
+	}
+	std::vector<float> convolve(const std::vector<uint8_t>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height)
+	{
+		std::vector<float> convolution(image_width * image_height, 0.0f);
+
+		for (int i = 0; i < image_height; ++i) {
+			for (int j = 0; j < image_width; ++j) {
+				std::vector<uint8_t> image_patch;
+
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						int image_i = i + mi - mask_height / 2;
+						int image_j = j + mj - mask_width / 2;
+
+						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
+							image_patch.push_back(data[image_i * image_width + image_j] * mask[mi * mask_width + mj]);
+						}
+						else {
+							image_patch.push_back(0);
+						}
+					}
+				}
+				convolution[i * image_width + j] = std::accumulate(image_patch.begin(), image_patch.end(), 0);
+			}
+		}
+		return convolution;
+	}
+	std::vector<float> gradient_magnitude(const std::vector<float>& dataX, const std::vector<float>& dataY, int image_width, int image_height)
+	{
+		std::vector<float> magnitude(image_width * image_height);
+
+		for (int i = 0; i < image_width * image_height; ++i) {
+			magnitude[i] = std::sqrt(dataX[i] * dataX[i] + dataY[i] * dataY[i]);
+		}
+
+		return magnitude;
+	}
+
+	std::vector<uint8_t> sharpen(const std::vector<uint8_t>& data, const std::vector<uint8_t>& edges, int image_width, int image_height)
+	{
+		std::vector<uint8_t> sharpened(image_width * image_height);
+
+		for (int i = 0; i < image_width * image_height; ++i) {
+			uint8_t val = data[i] - edges[i];
+			sharpened[i] = std::clamp(val, (uint8_t)0, (uint8_t)255);
+		}
+
+		return sharpened;
+	}
+
+	std::vector<uint8_t> clamp_overflow_to_uint8_max(std::vector<float>& data)
+	{
+		std::vector<uint8_t> result(data.size());
+		std::transform(data.begin(), data.end(), result.begin(), [](float val) -> uint8_t {
+			return static_cast<uint8_t>(std::min(255.0f, val));
+		});
+		return result;
+	}
+	std::vector<uint8_t> to_uint8_max(std::vector<float>& data)
+	{
+		std::vector<uint8_t> result(data.size());
+		std::transform(data.begin(), data.end(), result.begin(), [](float val) -> uint8_t {
+			return static_cast<uint8_t>(std::clamp(val, 0.0f, 255.0f));
+			});
+		return result;
+	}
+	std::vector<uint8_t> visualize_partials(const std::vector<float>& dataX)
+	{
+		int max_dx = *std::max_element(dataX.begin(), dataX.end());
+		int min_dx = *std::min_element(dataX.begin(), dataX.end());
+
+		std::vector<uint8_t> rgba;
+
+		for (size_t i = 0; i < dataX.size(); ++i) {
+			// Convert Gx and Gy to [0, 255]
+			uint8_t normalizedDx = static_cast<uint8_t>(255.0 * (dataX[i] - min_dx) / (max_dx - min_dx));
+
+			// Gradient magnitude for alpha
+			uint8_t alpha = static_cast<uint8_t>(255.0 * std::sqrt(dataX[i] * dataX[i]) / std::sqrt(max_dx * max_dx));
+				
+			rgba.push_back(255);
+			rgba.push_back(255);
+			rgba.push_back(255);
+			rgba.push_back(normalizedDx);
+		}
+
+		return rgba;
+	}
+	std::vector<uint8_t> flip(const std::vector<uint8_t>& dataX)
+	{
+		std::vector<uint8_t> result(dataX.size());
+		std::transform(dataX.begin(), dataX.end(), result.begin(), [](uint8_t val) -> uint8_t {
+			return std::clamp(255 - val, 0 ,255);
+			});
+		return result;
+	}
+	std::vector<uint8_t> threshold(const std::vector<uint8_t>& data, int thresholdValue, bool above = true) {
+		std::vector<uint8_t> output(data.size(), 0);  // initialize to black
+
+		// Compute gradient magnitudes
+		for (size_t i = 0; i < data.size(); ++i) {
+			if (((above) ? (data[i] > thresholdValue) : (data[i] < thresholdValue))) {
+				output[i] = 255;  // set to white if above threshold
+			}
+		}
+
+		return output;
+	}
+	std::vector<uint8_t> threshold_range(const std::vector<uint8_t>& data, int min, int max, bool flip = false)
+	{
+		std::vector<uint8_t> output(data.size(), 0);  // initialize to black
+
+		// Compute gradient magnitudes
+		for (size_t i = 0; i < data.size(); ++i) {
+			if ((data[i] >= min) && (data[i] <= max)) {
+				output[i] = (flip) ? 255 : 0;  // set to white if above threshold
+			}
+			else {
+				output[i] = (flip) ? 0 : 255;
+			}
+		}
+
+		return output;
 	}
 } // namespace cs474

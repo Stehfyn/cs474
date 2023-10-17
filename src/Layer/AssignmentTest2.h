@@ -17,6 +17,7 @@ namespace cs474 {
 		void Question2();
 		void Question3();
 		void Question4();
+		void QuestionTest();
 
 	private:
 		int factor = 1;
@@ -26,7 +27,12 @@ namespace cs474 {
 		bool inspect_eq = false;
 		const char* spechistoChoice = "boat";
 		const char* imageChoice = "boat";
+		int filterSize = 7;
+		int filterSizeAvg = 7;
 		bool inspect_spec = false;
+		float percentSaltPep = 30.0;
 		//std::vector<uint8_t> specImageData;
+
+		int ghettoIndex = 0;
 	};
 }

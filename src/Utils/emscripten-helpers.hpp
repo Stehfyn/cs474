@@ -30,5 +30,12 @@ namespace utils {
 		snprintf(_url, sizeof(_url), "%s", url);
 		emscripten_fetch(&attr, _url);
 	}
+	static void bypass_emscripten_bc_it_sucks(void* void_fn_ptr) {
+		auto* fn_ptr = reinterpret_cast<std::function<void()>*>(void_fn_ptr);
+		if (fn_ptr) {
+			auto& fn = * fn_ptr;
+			fn();
+		}
+	}
 } // namespace utils
 } // namespace cs474
