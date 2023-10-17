@@ -21,6 +21,7 @@ public:
 	void Question5();
 
 private:
+	void DoMaskAnimation(ImVec2 start);
 	void DoSpatialFiltering();
 
 	void DoPrewittLenna();

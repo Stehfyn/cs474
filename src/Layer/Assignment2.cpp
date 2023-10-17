@@ -80,8 +80,10 @@ void Assignment2::Question1() {
 		ImVec2 end_pos(start_pos.x + 84, start_pos.y + 53);
 		ImGui::Image((void*)(intptr_t)(og_opt.value()->GetRendererID()), ImVec2(444, 333));
 		//ImGui::Image((void*)(intptr_t)(filt_opt.value()->GetRendererID()), ImVec2(444, 333));
-		ImGui::GetForegroundDrawList()->AddRect(start_pos, end_pos, ImU32(0xff0000ff));
-		ImGui::GetForegroundDrawList()->AddText(start_text, ImU32(0xff0000ff), "Mask");
+		if (ImGui::IsWindowFocused()) {
+			ImGui::GetForegroundDrawList()->AddRect(start_pos, end_pos, ImU32(0xff0000ff));
+			ImGui::GetForegroundDrawList()->AddText(start_text, ImU32(0xff0000ff), "Mask");
+		}
 	}
 	static float size = 32.0f;
 	static float thickness = 8.0f;
@@ -89,9 +91,12 @@ void Assignment2::Question1() {
 		const auto& style = ImGui::GetStyle();
 		static bool inspect_filt = false;
 		ImGui::SameLine();
+		ImVec2 start = ImGui::GetCursorScreenPos();
 		inspect_filt = widgets::ImageInspector("inspectfilt", filt_opt.value(), &inspect_filt, { 0.0f, 0.0f }, { style.ItemSpacing.x + 444, 0.0f });
 		inspect_filt = false;
-
+		if (ImGui::IsWindowFocused()) {
+			this->DoMaskAnimation(start);
+		}
 	}
 	else { 
 		TryMakeSpatialFilteringTexture(false);
@@ -111,6 +116,55 @@ void Assignment2::Question1() {
 		ImGui::SetCursorPosY(start_y + (size * 2.0f) + ImGui::GetFontSize());
 		ImGui::Text(loading.c_str());
 	}
+}
+
+void Assignment2::DoMaskAnimation(ImVec2 start) {
+	static float pixps = 14800.0f;
+	static float x = 0.0f;
+	static float y = 0.0f;
+	ImVec2 offset{x, y};
+	ImVec2 start_pos(start.x + offset.x, start.y + offset.y);
+	ImVec2 end_pos(start_pos.x + 84, start_pos.y + 53);
+	//70 76
+	//133 188
+	//379 268
+
+	x += (pixps * ImGui::GetIO().DeltaTime);
+
+	if (x >= 444.0f) {
+		y += 1.0f;
+		x = 0.0f;
+	}
+	if (y >= 333.0f) {
+		y = 0.0f;
+		x = 0.0f;
+	}
+
+	if ((y >= (77 - (53 / 2))) || ((y == (76 - (53 / 2))) && (x >= (70 - (84 / 2))))) {
+		ImVec2 start_pos_c(start.x + 70 - (84 / 2.0), start.y + 76 - (53 / 2.0));
+		ImVec2 start_text_c(start_pos_c.x - 28, start_pos_c.y - (52 - ImGui::GetFontSize()));
+		ImVec2 end_pos_c(start_pos_c.x + 84, start_pos_c.y + 53);
+		ImGui::GetForegroundDrawList()->AddRect(start_pos_c, end_pos_c, ImU32(0xffffffff));
+		ImGui::GetForegroundDrawList()->AddText(start_text_c, ImU32(0xffffffff), "(70, 76)");
+	}
+	if ((y >= (189 - (53 / 2))) || ((y == (188 - (53 / 2))) && (x >= (133 - (84 / 2))))) {
+		ImVec2 start_pos_c(start.x + 133 - (84 / 2), start.y + 189 - (53 / 2));
+		ImVec2 start_text_c(start_pos_c.x - 28, start_pos_c.y - (52 - ImGui::GetFontSize()));
+		ImVec2 end_pos_c(start_pos_c.x + 84, start_pos_c.y + 53);
+		ImGui::GetForegroundDrawList()->AddRect(start_pos_c, end_pos_c, ImU32(0xffffffff));
+		ImGui::GetForegroundDrawList()->AddText(start_text_c, ImU32(0xffffffff), "(133, 188)");
+	}
+	if ((y >= (269 - (53 / 2))) || ((y == (268 - (53 / 2))) && (x >= (379 - (84 / 2))))) {
+		ImVec2 start_pos_c(start.x + 379 - (84 / 2), start.y + 268 - (53 / 2));
+		ImVec2 start_text_c(start_pos_c.x - 28, start_pos_c.y - (52 - ImGui::GetFontSize()));
+		ImVec2 end_pos_c(start_pos_c.x + 84, start_pos_c.y + 53);
+		ImGui::GetForegroundDrawList()->AddRect(start_pos_c, end_pos_c, ImU32(0xffffffff));
+		ImGui::GetForegroundDrawList()->AddText(start_text_c, ImU32(0xffffffff), "(379, 268)");
+	}
+
+	ImVec2 start_text(start_pos.x - 28, start_pos.y - ImGui::GetFontSize());
+	ImGui::GetForegroundDrawList()->AddRect(start_pos, end_pos, ImU32(0xff0000ff));
+	ImGui::GetForegroundDrawList()->AddText(start_text, ImU32(0xff0000ff), "Mask");
 }
 
 void Assignment2::Question2() {
