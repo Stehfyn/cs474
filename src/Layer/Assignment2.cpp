@@ -162,7 +162,7 @@ void Assignment2::DoMaskAnimation(ImVec2 start) {
 		ImGui::GetForegroundDrawList()->AddText(start_text_c, ImU32(0xffffffff), "(379, 268)");
 	}
 
-	ImVec2 start_text(start_pos.x - 28, start_pos.y - ImGui::GetFontSize());
+	ImVec2 start_text(start_pos.x, start_pos.y - ImGui::GetFontSize());
 	ImGui::GetForegroundDrawList()->AddRect(start_pos, end_pos, ImU32(0xff0000ff));
 	ImGui::GetForegroundDrawList()->AddText(start_text, ImU32(0xff0000ff), "Mask");
 }
