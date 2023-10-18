@@ -119,7 +119,7 @@ void Assignment2::Question1() {
 }
 
 void Assignment2::DoMaskAnimation(ImVec2 start) {
-	static float pixps = 14800.0f;
+	static float pixps = 888.0f;
 	static float x = 0.0f;
 	static float y = 0.0f;
 	ImVec2 offset{x, y};
@@ -132,7 +132,7 @@ void Assignment2::DoMaskAnimation(ImVec2 start) {
 	x += (pixps * ImGui::GetIO().DeltaTime);
 
 	if (x >= 444.0f) {
-		y += 1.0f;
+		y += 22.0f;
 		x = 0.0f;
 	}
 	if (y >= 333.0f) {
