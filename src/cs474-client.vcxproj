@@ -99,7 +99,8 @@
     <Link>
       <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 -s FETCH=1 -s ALLOW_MEMORY_GROWTH -s ERROR_ON_UNDEFINED_SYMBOLS=0 -USE_PTHREADS=1 -sPTHREAD_POOL_SIZE=8 -sWASM_WORKERS -sENVIRONMENT=web,worker --preload-file assets/ -pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3 -s WASM=1 -s ALLOW_MEMORY_GROWTH -s FETCH=1 -s WASM_WORKERS=1 -sENVIRONMENT=web,worker -pthread --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>NoDebugInformation</GenerateDebugInformation>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -109,7 +110,9 @@
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <OptimizationLevel>O3</OptimizationLevel>
+      <GenerateDebugInformation>None</GenerateDebugInformation>
     </ClCompile>
     <CustomBuildStep>
       <Command>
@@ -132,7 +135,7 @@
     <Link>
       <AdditionalDependencies>cs474; imgui</AdditionalDependencies>
       <AdditionalLinkDirectories>$(SolutionDir)bin\cs474\$(Platform)\$(Configuration)\; $(SolutionDir)bin\imgui\$(Platform)\$(Configuration)\</AdditionalLinkDirectories>
-      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -s WASM=1 -s FETCH=1 -s ALLOW_MEMORY_GROWTH -s ERROR_ON_UNDEFINED_SYMBOLS=0 -USE_PTHREADS=1 -sPTHREAD_POOL_SIZE=8 -sWASM_WORKERS -sENVIRONMENT=web,worker --preload-file assets/ -pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3 -s WASM=1 -s ALLOW_MEMORY_GROWTH -s FETCH=1 -s WASM_WORKERS=1 -sENVIRONMENT=web,worker -pthread --preload-file assets/ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -142,7 +145,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
-      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <CustomBuildStep>
       <Command>
