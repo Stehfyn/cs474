@@ -51,12 +51,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Emscripten'">
     <ClCompile>
-      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <OptimizationLevel>O3</OptimizationLevel>
+      <GenerateDebugInformation>None</GenerateDebugInformation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Emscripten'">
     <ClCompile>
-      <AdditionalOptions>-pthread -sWASM_WORKERS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1163,7 +1163,7 @@ void Assignment2::Question5() {
 }
 
 void Assignment2::DoSpatialFiltering() {
-	emscripten_wasm_worker_t worker = emscripten_malloc_wasm_worker(/*stackSize: */1024);
+	emscripten_wasm_worker_t worker = emscripten_malloc_wasm_worker(/*stackSize: */1024 * 8);
 	// wtf? - @Stehfyn 11/13/23
 	// emscripten_wasm_worker_post_function_sig(worker, reinterpret_cast<std::function<void()>*>(&ProcessSpatialFilteringData), "()");
 	emscripten_wasm_worker_post_function_v(worker, ProcessSpatialFilteringData);
