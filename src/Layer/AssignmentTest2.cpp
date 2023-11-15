@@ -1,6 +1,8 @@
 #include "..\cs474.pch.h"
 #include "AssignmentTest2.h"
 #include "..\Graphics\Image.h"
+
+
 namespace cs474 {
 	AssignmentTest2::AssignmentTest2() {
 	}
@@ -18,12 +20,11 @@ namespace cs474 {
 
 	void AssignmentTest2::OnUIRender() {
 
-		
-		//this->Question1();
+		this->Question1();
 		//this->Question2();
 		//this->Question3();
 		//this->Question4();
-		
+
 	}
 	void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
@@ -34,85 +35,44 @@ namespace cs474 {
 		ImVec2 pos = { 200, 0 };
 		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
-		ImGui::Begin("Question1");
-		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
-		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
+		ImGui::Begin("DFT Plot");
 
-		if (img_opt.has_value()) {
-			const auto& style = ImGui::GetStyle();
-			const auto& img = img_opt.value();
-			const std::vector<uint8_t>& rawData = img->GetRawData();
-			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			//ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
-			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
-			ImGui::SameLine();
+		static float f[] = { 2, 3, 4, 4 };
+		const unsigned long nn = sizeof(f) / sizeof(float);
+		static float data[2 * nn];
 
-			// Computed image
+		static std::vector<float> realPart(nn), imagPart(nn), magnitude(nn);
 
-			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "sub");
-
-			if (sub_opt.has_value()) {
-				const auto& img_sub = sub_opt.value();
-				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
-				//ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
-			}
-			else {
-				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+		if (ImGui::Button("FFT Calc")) {
+			// Initialize the data array with the real signal interleaved with zeros for the imaginary parts.
+			for (unsigned long i = 0; i < nn; i++) {
+				data[2 * i] = f[i];
+				data[2 * i + 1] = 0;
 			}
 
-			ImGui::Text("Original: ");
-			ImGui::SameLine();
+			// Perform the FFT
+			fft(data, nn, 1);
 
-			//ImGui::Dummy(,)
-
-			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
-			ImGui::Text("Processed: ");
-
-
-			ImGui::Separator();
-
-			static bool init_sample = true;
-			if (ImGui::Button("Sub sample") || init_sample) {
-				auto subsampled = subSample(rawData, factor, img->GetWidth(), img->GetHeight());
-				if (subsampled.has_value()) {
-					auto data = subsampled.value();
-					auto scaled = scale(data, factor, img->GetWidth() / factor, img->GetHeight() / factor);
-					if (scaled.has_value()) {
-						auto scaled_data = scaled.value();
-						bool success = image_registry->AddTexture("lenna", "sub", graphics::make_texture(scaled_data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
-					}
-				}
-				if (init_sample) {
-					init_sample = false;
-				}
-			}
-
-			//Creating a Combo menu for the factor choices
-			int items[] = { 1,2,4,8 };
-			static int item_current_idx = 0;
-			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Factor", std::to_string(items[item_current_idx]).c_str()))
-			{
-				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-				{
-					const bool is_selected = (item_current_idx == n);
-					if (ImGui::Selectable(std::to_string(items[n]).c_str(), is_selected))
-					{
-						item_current_idx = n;
-						this->factor = items[n];
-					}
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
+			// Process the FFT data
+			for (unsigned long i = 0; i < nn; i++) {
+				realPart[i] = data[2 * i];
+				imagPart[i] = data[2 * i + 1];
+				magnitude[i] = std::sqrt(realPart[i] * realPart[i] + imagPart[i] * imagPart[i]);
 			}
 		}
+
+		/*ImPlot::CreateContext();
+		ImGui::Begin("DFT Plot");
+
+		if (ImPlot::BeginPlot("FFT Results")) {
+			ImPlot::PlotLine("Real Part", realPart.data(), nn);
+			ImPlot::PlotLine("Imaginary Part", imagPart.data(), nn);
+			ImPlot::PlotLine("Magnitude", magnitude.data(), nn);
+			ImPlot::EndPlot();
+		}
+
+		
+		ImPlot::DestroyContext();*/
 		ImGui::End();
 	}
 	void AssignmentTest2::Question2() {
