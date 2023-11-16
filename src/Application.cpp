@@ -85,6 +85,8 @@ void Application::InitializeImGui() {
     ImGui_ImplGlfw_InitForOpenGL(m_Window.get(), true);
     ImGui_ImplOpenGL3_Init();
 
+    ImPlot::CreateContext();
+
     ImGuiIO& io = ImGui::GetIO();
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;

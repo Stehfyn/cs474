@@ -60,19 +60,15 @@ namespace cs474 {
 				magnitude[i] = std::sqrt(realPart[i] * realPart[i] + imagPart[i] * imagPart[i]);
 			}
 		}
-
-		/*ImPlot::CreateContext();
+		ImGui::End();
+		
 		ImGui::Begin("DFT Plot");
-
 		if (ImPlot::BeginPlot("FFT Results")) {
 			ImPlot::PlotLine("Real Part", realPart.data(), nn);
 			ImPlot::PlotLine("Imaginary Part", imagPart.data(), nn);
 			ImPlot::PlotLine("Magnitude", magnitude.data(), nn);
 			ImPlot::EndPlot();
 		}
-
-		
-		ImPlot::DestroyContext();*/
 		ImGui::End();
 	}
 	void AssignmentTest2::Question2() {

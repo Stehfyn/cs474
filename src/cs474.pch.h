@@ -44,6 +44,7 @@
 // #include "ImTween.h" // need to fix for -std=c++2a
 #include "ImCoolbar.h"
 #include "imspinner.h"
+#include "implot.h"
 #include "IconsFontAwesome6.h"
 #include "stb_image.h"
 

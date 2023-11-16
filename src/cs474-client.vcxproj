@@ -107,7 +107,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner; $(SolutionDir)external\implot</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
@@ -142,7 +142,7 @@
     </ProjectReference>
     <ClCompile>
       <RunStaticAnalysis>false</RunStaticAnalysis>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\imgui;$(SolutionDir)include; $(SolutionDir)external\imgui_md; $(SolutionDir)external\md4c\src\; $(SolutionDir)external\stb; $(SolutionDir)external\ImTween; $(SolutionDir)external\IconFontCppHeaders; $(SolutionDir)external\ImCoolbar; $(SolutionDir)external\imspinner; $(SolutionDir)external\implot</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>$(ProjectDir)\cs474.pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>

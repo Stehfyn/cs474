@@ -20,6 +20,9 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
     <ClCompile Include="imgui_md\imgui_md.cpp" />
+    <ClCompile Include="implot\implot.cpp" />
+    <ClCompile Include="implot\implot_demo.cpp" />
+    <ClCompile Include="implot\implot_items.cpp" />
     <ClCompile Include="md4c\src\md4c.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
