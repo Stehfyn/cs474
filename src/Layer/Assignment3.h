@@ -17,6 +17,15 @@ private:
 	void Experiment1();
 	void Experiment2();
 	void Experiment3();
+
+private:
+	std::vector<uint8_t> GenerateSubject(unsigned int width, 
+		unsigned int height, 
+		unsigned int sq_width, 
+		unsigned int sq_height);
+	void GenerateSubject2a();
+	void GenerateSubject2b();
+	void GenerateSubject2c();
 };
 }
 
