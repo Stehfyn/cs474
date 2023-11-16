@@ -26,51 +26,148 @@ namespace cs474 {
 		//this->Question4();
 
 	}
-	void AssignmentTest2::Question1() {
-		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
+void AssignmentTest2::Question1() {
+    ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
 
-		ImVec2 size = { 640, 480 };
-		ImGui::SetNextWindowSize(size);
+    ImVec2 size = { 2000, 1080 };
+    ImGui::SetNextWindowSize(size);
 
-		ImVec2 pos = { 200, 0 };
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImVec2 pos = { 500, 0 };
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
-		ImGui::Begin("DFT Plot");
+    ImGui::Begin("DFT Plot");
 
-		static float f[] = { 2, 3, 4, 4 };
-		const unsigned long nn = sizeof(f) / sizeof(float);
-		static float data[2 * nn];
+	//Rectangle function stuff
+	std::vector<float> originalRectWave = utils::ReadFloatData("assets/data/Rect_128.txt");
+	int rectSamples = originalRectWave.size();
+	std::vector<float> rectData(2 * rectSamples);
 
-		static std::vector<float> realPart(nn), imagPart(nn), magnitude(nn);
+    //Cos wave stuff
+    const int samples = 128;
+    const int cycles = 8;
+    static float cosData[2 * samples]; // Array size doubled for real and imaginary parts
+	std::vector<float> originalCosWave(samples);
 
-		if (ImGui::Button("FFT Calc")) {
-			// Initialize the data array with the real signal interleaved with zeros for the imaginary parts.
-			for (unsigned long i = 0; i < nn; i++) {
-				data[2 * i] = f[i];
-				data[2 * i + 1] = 0;
-			}
+	//Signal stuff
+    const char* signalOptions[] = { "2,3,4,4", "1,2,3,4", "5,6,7,8", "-2,-3,-4,-4", "-9,5,6,0"};
+	static int currentSignal = 0;
 
-			// Perform the FFT
-			fft(data, nn, 1);
+	const unsigned long nn = 4;
+    static float data[2 * nn];
+	static std::vector<std::vector<float>> signals = {{-9,5,6,0}, {-2,-3,-4,-4}, {5,6,7,8}, {1,2,3,4}, {2,3,4,4}};
 
-			// Process the FFT data
-			for (unsigned long i = 0; i < nn; i++) {
-				realPart[i] = data[2 * i];
-				imagPart[i] = data[2 * i + 1];
-				magnitude[i] = std::sqrt(realPart[i] * realPart[i] + imagPart[i] * imagPart[i]);
-			}
-		}
-		ImGui::End();
-		
-		ImGui::Begin("DFT Plot");
-		if (ImPlot::BeginPlot("FFT Results")) {
-			ImPlot::PlotLine("Real Part", realPart.data(), nn);
-			ImPlot::PlotLine("Imaginary Part", imagPart.data(), nn);
-			ImPlot::PlotLine("Magnitude", magnitude.data(), nn);
-			ImPlot::EndPlot();
-		}
-		ImGui::End();
+	auto signal = signals[currentSignal];
+
+    static std::vector<float> realPart(nn), imagPart(nn), magnitude(nn);
+    static std::vector<float> realPartCos(samples), imagPartCos(samples), magnitudeCos(samples);
+
+	// Initialize the data array with the real signal interleaved with zeros for the imaginary parts.
+	for (unsigned long i = 0; i < nn; i++) {
+		data[2 * i] = signal[i];
+		data[2 * i + 1] = 0;
 	}
+
+	// Generate the cosine wave
+	for (int i = 0; i < samples; ++i) {
+		cosData[2 * i] = cos(2 * M_PI * cycles * i / samples); 
+		cosData[2 * i + 1] = 0; 
+		originalCosWave[i] = cosData[2 * i];
+	}
+
+	// Generate rectangle wave
+	for (int i = 0; i < rectSamples; ++i) {
+		rectData[2 * i] = originalRectWave[i]; 
+		rectData[2 * i + 1] = 0; 
+		originalRectWave[i] = rectData[2 * i];
+	}
+
+    // Perform the FFT on the selected signal
+    OneDfft(data, nn, 1);
+
+    // Perform the FFT on the cosine wave
+    OneDfft(cosData, samples, 1);
+
+	//Perform FFT of rectangle function
+	OneDfft(rectData.data(), rectSamples, 1);
+
+    // Process the FFT data for the selected signal
+	for (int i = 0; i < nn; i++) {
+		realPart[i] = data[2 * i];
+		imagPart[i] = data[2 * i + 1];
+		magnitude[i] = std::sqrt(realPart[i] * realPart[i] + imagPart[i] * imagPart[i]);
+	}
+
+    // Process the FFT data for the cosine wave
+	static int shift = 30;
+    for (int i = 0; i < samples; i++) {
+        realPartCos[i] = cosData[2 * i];
+        imagPartCos[i] = cosData[2 * i + 1];
+        magnitudeCos[i] = std::sqrt(realPartCos[i] * realPartCos[i] + imagPartCos[i] * imagPartCos[i]);
+		std::rotate(magnitudeCos.rbegin(), magnitudeCos.rbegin() + shift, magnitudeCos.rend());
+		//std::rotate(magnitudeCos.rbegin(), magnitudeCos.rbegin() + (magnitudeCos.size() / (2*2)), magnitudeCos.rend());
+    }
+
+	// Process the FFT data for the rectangle wave
+	std::vector<float> realPartRect(rectSamples), imagPartRect(rectSamples), magnitudeRect(rectSamples);
+	for (int i = 0; i < rectSamples; i++) {
+
+		realPartRect[i] = rectData[2 * i];
+		imagPartRect[i] = rectData[2 * i + 1];
+		magnitudeRect[i] = std::sqrt(realPartRect[i] * realPartRect[i] + imagPartRect[i] * imagPartRect[i]);
+		std::rotate(magnitudeRect.begin(), magnitudeRect.begin() + (magnitudeRect.size() / 2), magnitudeRect.end());
+	}
+
+    // Plotting the FFT results for the selected signal
+	ImPlot::SetNextAxesToFit();
+    if (ImPlot::BeginPlot("Signal 1D-FFT Results", "X-axis", "Y-axis", ImVec2(400, 400), 0, ImPlotAxisFlags_AutoFit)) {
+		ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+        ImPlot::PlotLine("Real Part", realPart.data(), nn);
+        ImPlot::PlotLine("Imaginary Part", imagPart.data(), nn);
+        ImPlot::PlotLine("Magnitude", magnitude.data(), nn);
+        ImPlot::EndPlot();
+    }
+	ImGui::SameLine();
+
+	// Plotting the original cosine wave
+	ImPlot::SetNextAxesToFit();
+	if (ImPlot::BeginPlot("Original Cosine Wave", "X-axis", "Y-axis", ImVec2(400, 400))) {
+		ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+		ImPlot::PlotLine("Cosine Wave", originalCosWave.data(), samples);
+		ImPlot::EndPlot();
+	}
+	ImGui::SameLine();
+
+    // Plotting the FFT results for the cosine wave
+	ImPlot::SetNextAxesToFit();
+    if (ImPlot::BeginPlot("Cosine Wave 1D-FFT", "X-axis", "Y-axis", ImVec2(400, 400))) {
+		ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+        ImPlot::PlotLine("Real Part", realPartCos.data(), samples);
+        ImPlot::PlotLine("Imaginary Part", imagPartCos.data(), samples);
+        ImPlot::PlotLine("Magnitude", magnitudeCos.data(), samples);
+        ImPlot::EndPlot();
+    }
+	ImGui::SameLine();
+
+	// Plotting the FFT results for the rectangle wave
+	ImPlot::SetNextAxesToFit();
+	if (ImPlot::BeginPlot("Rectangle Wave 1D-FFT", "X-axis", "Y-axis", ImVec2(400, 400))) {
+		ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
+		ImPlot::PlotLine("Real Part", realPartRect.data(), rectSamples);
+		ImPlot::PlotLine("Imaginary Part", imagPartRect.data(), rectSamples);
+		ImPlot::PlotLine("Magnitude", magnitudeRect.data(), rectSamples);
+		ImPlot::EndPlot();
+	}
+
+	// Dropdown menu to select the signal
+	ImGui::SetNextItemWidth(300);
+	ImGui::Combo("Select Signal", &currentSignal, signalOptions, IM_ARRAYSIZE(signalOptions));
+
+	ImGui::SameLine();
+	ImGui::DragInt("Shift", &shift, 1.0f, 0, 128);
+
+    ImGui::End();
+}
+
 	void AssignmentTest2::Question2() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question2"));
 

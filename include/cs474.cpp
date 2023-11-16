@@ -452,8 +452,7 @@ namespace cs474 {
 
 		return output;
 	}
-
-	void fft(float data[], unsigned long nn, int isign) {
+	void OneDfft(float data[], unsigned long nn, int isign) {
 		unsigned long n, mmax, m, j, istep, i;
 		double wtemp, wr, wpr, wpi, wi, theta;
 		float tempr, tempi;
@@ -498,6 +497,12 @@ namespace cs474 {
 				wi = wi * wpr + wtemp * wpi + wi;
 			}
 			mmax = istep;
+		}
+		// Add the scaling step here, after the FFT computation
+		if (isign == 1) { // Scaling should be done only for the inverse FFT
+			for (i = 0; i < n; i++) {
+				data[i] /= nn;
+			}
 		}
 	}
 
