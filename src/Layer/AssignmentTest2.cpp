@@ -20,8 +20,8 @@ namespace cs474 {
 
 	void AssignmentTest2::OnUIRender() {
 
-		this->Question1();
-		//this->Question2();
+		//this->Question1();
+		this->Question2();
 		//this->Question3();
 		//this->Question4();
 
@@ -167,143 +167,110 @@ void AssignmentTest2::Question1() {
 
     ImGui::End();
 }
+void AssignmentTest2::Question2() {
+	ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
 
-	void AssignmentTest2::Question2() {
-		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question2"));
+	ImVec2 size = { 2000, 1080 };
+	ImGui::SetNextWindowSize(size);
 
-		ImVec2 size = { 1200, 1200 };
-		ImGui::SetNextWindowSize(size);
+	ImVec2 pos = { 500, 0 };
+	ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
-		ImVec2 pos = { 200, 0 };
-		ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+	ImGui::Begin("Magnitude And Phase");
 
-		ImGui::Begin("Question2");
-		std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
-		const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture("lenna", ".pgm");
+	static std::string currentImage = "lenna"; // Default image
+	const char* items[] = { "lenna", "boat", "f_16" };
+	static int item_current_idx = 0; // Here we store our selection data as an index.
+	if (ImGui::Combo("Select Image", &item_current_idx, items, IM_ARRAYSIZE(items))) {
+		currentImage = items[item_current_idx];
+	}
 
-		if (img_opt.has_value()) {
-			const auto& style = ImGui::GetStyle();
-			const auto& img = img_opt.value();
-			const std::vector<uint8_t>& rawData = img->GetRawData();
-			ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-			bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
-			ImGui::SameLine();
+	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
+	const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(currentImage, ".pgm");
 
-			// Computed image
-			const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture("lenna", "average");
+	if (img_opt.has_value()) {
+		const auto& style = ImGui::GetStyle();
+		const auto& img = img_opt.value();
+		const std::vector<uint8_t>& rawData = img->GetRawData();
+		ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
+		bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+		ImGui::SameLine();
 
-			if (sub_opt.has_value()) {
-				const auto& img_sub = sub_opt.value();
-				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
-			}
-			else {
-				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
-			}
-			ImGui::SameLine();
+		// Computed image
+		const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture(currentImage, "2DFFT");
 
-			const std::optional<graphics::Texture>& sub_opt_blur = image_registry->GetTexture("lenna", "blur");
+		if (sub_opt.has_value()) {
+			const auto& img_sub = sub_opt.value();
+			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+			bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+			if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+		}
+		else {
+			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+		}
 
-			if (sub_opt_blur.has_value()) {
-				const auto& img_sub = sub_opt_blur.value();
-				ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-				bool is_hovered2 = widgets::ImageInspector("inspect3", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
-			}
-			else {
-				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
-			}
+		static bool init_sample = true;
+		if (ImGui::Button("2D-FFT")) {
+			// Declaring single float vectors for real and imaginary parts
+			std::vector<float> real_Fuv(img->GetHeight() * img->GetWidth());
+			std::vector<float> imag_Fuv(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros
 
-			ImGui::Text("Original: ");
-
-			ImGui::SameLine();
-
-			float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
-			ImGui::Text("Averaged: ");
-
-			ImGui::SameLine();
-
-			float x_offset2 = 3 * style.ItemSpacing.x + ((float)img->GetWidth()*2 - ImGui::GetCursorPosX());
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset2);
-			ImGui::Text("Guassian Blurred: ");
-
-
-			ImGui::Separator();
-
-			auto do_avg_filtering = [&]() {
-				if (filterSize == 7) {
-					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, avgMask7x7);
-					if (averagedData.has_value()) {
-						auto data = averagedData.value();
-						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
-					}
+			for (int i = 0; i < img->GetHeight(); i++) {
+				for (int j = 0; j < img->GetWidth(); j++) {
+					//int sign = ((i + j) % 2 == 0) ? 1 : -1; //Shift
+					real_Fuv[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
 				}
-				else {
-					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, avgMask15x15);
-					if (averagedData.has_value()) {
-						auto data = averagedData.value();
-						bool success = image_registry->AddTexture("lenna", "average", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
-					}
-				}
-			};
+			}
 
-			auto do_gaus_filtering = [&]() {
-				if (filterSize == 7) {
-					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, gausMask7x7);
-					if (averagedData.has_value()) {
-						auto data = averagedData.value();
-						bool success = image_registry->AddTexture("lenna", "blur", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
-					}
-				}
-				else {
-					auto averagedData = smoothImage(img->GetRawData(), img->GetWidth(), img->GetHeight(), filterSize, gausMask15x15);
-					if (averagedData.has_value()) {
-						auto data = averagedData.value();
-						bool success = image_registry->AddTexture("lenna", "blur", graphics::make_texture(data, img->GetWidth(), img->GetHeight(), 1));
-						emscripten_log(EM_LOG_CONSOLE, "%d", success);
-					}
-				}
-			};
+			fft2D(img->GetWidth(), img->GetHeight(), real_Fuv, imag_Fuv, 1); //Forward 2dfft
 
-			static bool init_sample = true;
+			//Set the phase to zero before calculating the inverse
+			for (size_t i = 0; i < real_Fuv.size(); ++i) {
+				float magnitude = std::sqrt(real_Fuv[i] * real_Fuv[i] + imag_Fuv[i] * imag_Fuv[i]);
+				real_Fuv[i] = magnitude; // Set real part to magnitude
+				imag_Fuv[i] = 0.0f;      // Set imaginary part to zero
+			}
+
+			fft2D(img->GetWidth(), img->GetHeight(), real_Fuv, imag_Fuv, -1); //Inverse 2dfft
+
+			//Find min and max to normalize the real data and cast to uint8_t
+			float minVal = *std::min_element(real_Fuv.begin(), real_Fuv.end());
+			float maxVal = *std::max_element(real_Fuv.begin(), real_Fuv.end());
+
+			// Normalize and scale the frequency data for visualization
+			std::vector<uint8_t> frequencyData(img->GetHeight() * img->GetWidth());
+			for (size_t i = 0; i < real_Fuv.size(); ++i) {
+				float normalized = (real_Fuv[i] - minVal) / (maxVal - minVal);
+				frequencyData[i] = static_cast<uint8_t>(normalized * 255.0f);
+			}
+
+			//Dynamically allocate processdata vector
+			std::vector<uint8_t> processedData;
+			processedData.reserve(real_Fuv.size());
+
+			for (float val : real_Fuv) {
+				// Normalize the value
+				float normalized = (val - minVal) / (maxVal - minVal);
+
+				// Scale to 0-255 and convert to uint8_t
+				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+				processedData.push_back(pixel);
+			}
+
+			// Use processedData for creating the texture
+			if (!processedData.empty()) {
+				bool success = image_registry->AddTexture(currentImage, "2DFFT", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+				emscripten_log(EM_LOG_CONSOLE, "%d", success);
+			}
+			
 			if (init_sample) {
-				do_avg_filtering();
-				do_gaus_filtering();
 				init_sample = false;
 			}
-
-			std::vector<std::string> items = { "7x7", "15x15" };
-			static int item_current_idx = 0;
-			ImGui::SetNextItemWidth(100);
-			if (ImGui::BeginCombo("Avg Filter", items[item_current_idx].c_str()))
-			{
-				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-				for (int n = 0; n < items.size(); n++)
-				{
-					const bool is_selected = (item_current_idx == n);
-					if (ImGui::Selectable(items[n].c_str(), is_selected)) {
-						item_current_idx = n;
-						if (items[n] == "7x7") {
-							filterSize = 7;
-						}
-						else {
-							filterSize = 15;
-						}
-						do_avg_filtering();
-					}
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-			ImGui::End();
-			}
 		}
+	}
+
+	ImGui::End();
+}
 	void AssignmentTest2::Question3() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question3"));
 

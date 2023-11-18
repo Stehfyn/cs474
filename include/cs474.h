@@ -44,4 +44,5 @@ namespace cs474 {
 	std::vector<uint8_t> threshold(const std::vector<uint8_t>& data, int thresholdValue, bool above);
 	std::vector<uint8_t> threshold_range(const std::vector<uint8_t>& data, int min, int max, bool flip);
 	void OneDfft(float data[], unsigned long nn, int isign);
+	void fft2D(int N, int M, std::vector<float>& real_Fuv, std::vector<float>& imag_Fuv, int isign);
 } // namespace cs474

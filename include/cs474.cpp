@@ -499,11 +499,49 @@ namespace cs474 {
 			mmax = istep;
 		}
 		// Add the scaling step here, after the FFT computation
-		if (isign == 1) { // Scaling should be done only for the inverse FFT
+		if (isign == 1) { 
 			for (i = 0; i < n; i++) {
 				data[i] /= nn;
 			}
 		}
 	}
+
+	void fft2D(int N, int M, std::vector<float>& real_Fuv, std::vector<float>& imag_Fuv, int isign) {
+		// Temporary vectors for real and imaginary parts
+		std::vector<float> tempReal(2 * N, 0.0);
+		std::vector<float> tempImag(2 * M, 0.0);
+
+		// Apply the 1D FFT to each row
+		for (int i = 0; i < M; i++) {
+			for (int j = 0; j < N; j++) {
+				tempReal[2 * j] = real_Fuv[i * N + j];
+				tempReal[2 * j + 1] = imag_Fuv[i * N + j];
+			}
+
+			OneDfft(tempReal.data(), N, isign);
+
+			for (int j = 0; j < N; j++) {
+				real_Fuv[i * N + j] = tempReal[2 * j];
+				imag_Fuv[i * N + j] = tempReal[2 * j + 1];
+			}
+		}
+
+		// Apply the 1D FFT to each column
+		for (int j = 0; j < N; j++) {
+			for (int i = 0; i < M; i++) {
+				tempImag[2 * i] = real_Fuv[i * N + j];
+				tempImag[2 * i + 1] = imag_Fuv[i * N + j];
+			}
+
+			OneDfft(tempImag.data(), M, isign);
+
+			for (int i = 0; i < M; i++) {
+				real_Fuv[i * N + j] = tempImag[2 * i];
+				imag_Fuv[i * N + j] = tempImag[2 * i + 1];
+			}
+		}
+	}
+
+
 
 } // namespace cs474
