@@ -4,7 +4,7 @@
 
 // TODO: This is an example of a library function
 
-#define SWAP(a,b) {float temp=(a);(a)=(b);(b)=temp;}
+#define SWAP(a,b) do { auto tmp = a; a = b; b = tmp; } while (0)
 
 namespace cs474 {
 	void fcns474lib()
@@ -453,7 +453,7 @@ namespace cs474 {
 		return output;
 	}
 
-	void fft(float data[], unsigned long nn, int isign) {
+	void fft1D(float data[], unsigned long nn, int isign) {
 		unsigned long n, mmax, m, j, istep, i;
 		double wtemp, wr, wpr, wpi, wi, theta;
 		float tempr, tempi;
@@ -499,6 +499,68 @@ namespace cs474 {
 			}
 			mmax = istep;
 		}
+		// Add the scaling step here, after the FFT computation for inverse
+		if (isign == -1) { 
+			for (i = 0; i < n; i++) {
+				data[i] /= nn;
+			}
+		}
 	}
+	void fft2D(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, int isign) {
+		// Temporary vectors for real and imaginary parts
+		std::vector<float> tempReal(2 * width, 0.0);
+		std::vector<float> tempImag(2 * height, 0.0);
 
+		// Apply the 1D FFT to each row
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				tempReal[2 * j] = realPart[i * width + j];
+				tempReal[2 * j + 1] = imagPart[i * width + j];
+			}
+
+			fft1D(tempReal.data(), width, isign);
+
+			for (int j = 0; j < width; j++) {
+				realPart[i * width + j] = tempReal[2 * j];
+				imagPart[i * width + j] = tempReal[2 * j + 1];
+			}
+		}
+
+		// Apply the 1D FFT to each column
+		for (int j = 0; j < width; j++) {
+			for (int i = 0; i < height; i++) {
+				tempImag[2 * i] = realPart[i * width + j];
+				tempImag[2 * i + 1] = imagPart[i * width + j];
+			}
+
+			fft1D(tempImag.data(), height, isign);
+
+			for (int i = 0; i < height; i++) {
+				realPart[i * width + j] = tempImag[2 * i];
+				imagPart[i * width + j] = tempImag[2 * i + 1];
+			}
+		}
+	}
+	void fftShift(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height) {
+		int halfWidth = width / 2;
+		int halfHeight = height / 2;
+
+		for (int y = 0; y < halfHeight; ++y) {
+			for (int x = 0; x < halfWidth; ++x) {
+				// Indices for the quadrants
+				int indexTL = y * width + x;
+				int indexBR = (y + halfHeight) * width + (x + halfWidth);
+				int indexTR = y * width + (x + halfWidth);
+				int indexBL = (y + halfHeight) * width + x;
+
+				// Swap top-left with bottom-right
+				SWAP(realPart[indexTL], realPart[indexBR]);
+				SWAP(imagPart[indexTL], imagPart[indexBR]);
+
+				// Swap top-right with bottom-left
+				SWAP(realPart[indexTR], realPart[indexBL]);
+				SWAP(imagPart[indexTR], imagPart[indexBL]);
+			}
+		}
+	}
 } // namespace cs474

@@ -43,5 +43,7 @@ namespace cs474 {
 	std::vector<uint8_t> flip(const std::vector<uint8_t>& dataX);
 	std::vector<uint8_t> threshold(const std::vector<uint8_t>& data, int thresholdValue, bool above);
 	std::vector<uint8_t> threshold_range(const std::vector<uint8_t>& data, int min, int max, bool flip);
-	void fft(float data[], unsigned long nn, int isign);
+	void fft1D(float data[], unsigned long nn, int isign);
+	void fft2D(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, int isign);
+	void fftShift(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height);
 } // namespace cs474

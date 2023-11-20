@@ -29,6 +29,38 @@ static bool BurpFile(const std::filesystem::path& path, const std::vector<char>&
     return false;
 }
 
+
+static std::vector<float> ReadFloatData(const std::filesystem::path& path) {
+    std::ifstream file(path);
+
+    // If the file is not opened successfully, return an empty vector
+    if (!file.is_open()) {
+        return {};
+    }
+
+    std::vector<float> data;
+    std::string line;
+
+    // Read each line from the file
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        float value;
+
+        // Read each float from the line
+        while (iss >> value) {
+            data.push_back(value);
+        }
+
+        // If there is an error during reading (other than end-of-file), return an empty vector
+        if (iss.fail() && !iss.eof()) {
+            return {};
+        }
+    }
+
+    return data;
+}
+
+
 enum Depth {
     Max = (size_t)-1,
 };
