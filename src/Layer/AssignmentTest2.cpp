@@ -231,6 +231,7 @@ void AssignmentTest2::Question2() {
 		ImGui::SameLine(0, 20);
 
 		static bool init_sample3a = true;
+		static float c = 0.0f;
 		ImGui::SetNextItemWidth(150.0f);
 		if (ImGui::Button("2D-FFT Phase = 0")) {
 			// Declaring single float vectors for real and imaginary parts
@@ -246,11 +247,10 @@ void AssignmentTest2::Question2() {
 
 			fft2D(real, imag, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
 
-			const float c = 1.0f;
 			// Set real to magnitude and set imaginary to zero after fft
 			for (size_t i = 0; i < real.size(); ++i) {
 				float magnitude = std::sqrt(real[i] * real[i] + imag[i] * imag[i]);
-				real[i] = magnitude; // Set real part to magnitude
+				real[i] = abs(magnitude); // Set real part to magnitude
 				imag[i] = 0.0f; // Set imaginary part to zero
 			}
 			
@@ -286,6 +286,10 @@ void AssignmentTest2::Question2() {
 			}
 		}
 
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(100.0f);
+		ImGui::DragFloat("Shift", &c ,0.0f, 0, 128);
+
 		ImGui::SameLine(0, 150);
 
 		static bool init_sample3b = true;
@@ -309,7 +313,7 @@ void AssignmentTest2::Question2() {
 				float imagPart = imag_Fuv[i];
 
 				// Calculate the phase
-				float phase = atan2(imagPart, realPart); //Note: to compute tan - 1, use the function atan2().
+				float phase = atan2(realPart, imagPart); //Note: to compute tan - 1, use the function atan2().
 
 				// Set real and imaginary parts to cos(theta) and sin(theta)
 				real_Fuv[i] = cos(phase);
