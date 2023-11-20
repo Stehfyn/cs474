@@ -20,7 +20,7 @@ namespace cs474 {
 
 	void AssignmentTest2::OnUIRender() {
 
-		//this->Question1();
+		this->Question1();
 		this->Question2();
 		//this->Question3();
 		//this->Question4();
@@ -82,13 +82,13 @@ void AssignmentTest2::Question1() {
 	}
 
     // Perform the FFT on the selected signal
-    OneDfft(data, nn, 1);
+	fft1D(data, nn, 1);
 
     // Perform the FFT on the cosine wave
-    OneDfft(cosData, samples, 1);
+	fft1D(cosData, samples, 1);
 
 	//Perform FFT of rectangle function
-	OneDfft(rectData.data(), rectSamples, 1);
+	fft1D(rectData.data(), rectSamples, 1);
 
     // Process the FFT data for the selected signal
 	for (int i = 0; i < nn; i++) {
@@ -176,31 +176,30 @@ void AssignmentTest2::Question2() {
 	ImVec2 pos = { 500, 0 };
 	ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
 
-	ImGui::Begin("Magnitude And Phase");
+	ImGui::Begin("2D-FFT with Magnitude And Phase");
 
 	static std::string currentImage = "lenna"; // Default image
 	const char* items[] = { "lenna", "boat", "f_16" };
 	static int item_current_idx = 0; // Here we store our selection data as an index.
-	if (ImGui::Combo("Select Image", &item_current_idx, items, IM_ARRAYSIZE(items))) {
-		currentImage = items[item_current_idx];
-	}
 
 	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
 	const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(currentImage, ".pgm");
 
+	//Original image
 	if (img_opt.has_value()) {
 		const auto& style = ImGui::GetStyle();
 		const auto& img = img_opt.value();
 		const std::vector<uint8_t>& rawData = img->GetRawData();
 		ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
 		bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+
 		ImGui::SameLine();
 
-		// Computed image
-		const std::optional<graphics::Texture>& sub_opt = image_registry->GetTexture(currentImage, "2DFFT");
+		// Part 3A frequency representation of image
+		const std::optional<graphics::Texture>& sub_3a = image_registry->GetTexture(currentImage, "2DFFT");
 
-		if (sub_opt.has_value()) {
-			const auto& img_sub = sub_opt.value();
+		if (sub_3a.has_value()) {
+			const auto& img_sub = sub_3a.value();
 			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
 			bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
 			if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
@@ -209,40 +208,119 @@ void AssignmentTest2::Question2() {
 			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 		}
 
-		static bool init_sample = true;
-		if (ImGui::Button("2D-FFT")) {
+		ImGui::SameLine();
+
+		// Part 3B image
+		const std::optional<graphics::Texture>& sub_3b = image_registry->GetTexture(currentImage, "2DFFT3b");
+
+		if (sub_3b.has_value()) {
+			const auto& img_sub_3b = sub_3b.value();
+			ImVec2 img_sub_size3{ (float)img_sub_3b->GetWidth(), (float)img_sub_3b->GetHeight() };
+			bool is_hovered3 = widgets::ImageInspector("inspect3", img_sub_3b, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub_3b->GetWidth(), 0.0f });
+			if ((!is_hovered1) && (!is_hovered3)) inspect_sub = false;
+		}
+		else {
+			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+		}
+
+		ImGui::SetNextItemWidth(150.0f);
+		if (ImGui::Combo("Select Image", &item_current_idx, items, IM_ARRAYSIZE(items))) {
+			currentImage = items[item_current_idx];
+		}
+
+		ImGui::SameLine(0, 20);
+
+		static bool init_sample3a = true;
+		ImGui::SetNextItemWidth(150.0f);
+		if (ImGui::Button("2D-FFT Phase = 0")) {
+			// Declaring single float vectors for real and imaginary parts
+			std::vector<float> real(img->GetHeight() * img->GetWidth());
+			std::vector<float> imag(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros to set phase to 0
+
+			//Split up data into real and imaginary in this case imaginary is 0.
+			for (int i = 0; i < img->GetHeight(); i++) {
+				for (int j = 0; j < img->GetWidth(); j++) {
+					real[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
+				}
+			}
+
+			fft2D(real, imag, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
+
+			const float c = 1.0f;
+			// Set real to magnitude and set imaginary to zero after fft
+			for (size_t i = 0; i < real.size(); ++i) {
+				float magnitude = std::sqrt(real[i] * real[i] + imag[i] * imag[i]);
+				real[i] = magnitude; // Set real part to magnitude
+				imag[i] = 0.0f; // Set imaginary part to zero
+			}
+			
+			fft2D(real, imag, img->GetWidth(), img->GetHeight(), -1); //Inverse 2dfft
+
+			fftShift(real, imag, img->GetWidth(), img->GetHeight()); //Shift
+
+			//Find min and max to normalize the real data and cast to uint8_t
+			float minVal = *std::min_element(real.begin(), real.end());
+			float maxVal = *std::max_element(real.begin(), real.end());
+
+			//Dynamically allocate processdata vector
+			std::vector<uint8_t> processedData;
+			processedData.reserve(real.size());
+
+			for (float val : real) {
+				// Normalize the value
+				float normalized = (val - minVal) / (maxVal - minVal);
+
+				// Scale to 0-255 and convert to uint8_t
+				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+				processedData.push_back(pixel);
+			}
+
+			// Use processedData for creating the texture
+			if (!processedData.empty()) {
+				bool success = image_registry->AddTexture(currentImage, "2DFFT", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+				emscripten_log(EM_LOG_CONSOLE, "%d", success);
+			}
+			
+			if (init_sample3a) {
+				init_sample3a = false;
+			}
+		}
+
+		ImGui::SameLine(0, 150);
+
+		static bool init_sample3b = true;
+		ImGui::SetNextItemWidth(100.0f);
+		if (ImGui::Button("2D-FFT Magnitude = 1")){
 			// Declaring single float vectors for real and imaginary parts
 			std::vector<float> real_Fuv(img->GetHeight() * img->GetWidth());
 			std::vector<float> imag_Fuv(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros
 
 			for (int i = 0; i < img->GetHeight(); i++) {
 				for (int j = 0; j < img->GetWidth(); j++) {
-					//int sign = ((i + j) % 2 == 0) ? 1 : -1; //Shift
 					real_Fuv[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
 				}
 			}
 
-			fft2D(img->GetWidth(), img->GetHeight(), real_Fuv, imag_Fuv, 1); //Forward 2dfft
+			fft2D(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
 
-			//Set the phase to zero before calculating the inverse
+			// Normalize magnitude to 1 and retain original phase
 			for (size_t i = 0; i < real_Fuv.size(); ++i) {
-				float magnitude = std::sqrt(real_Fuv[i] * real_Fuv[i] + imag_Fuv[i] * imag_Fuv[i]);
-				real_Fuv[i] = magnitude; // Set real part to magnitude
-				imag_Fuv[i] = 0.0f;      // Set imaginary part to zero
+				float realPart = real_Fuv[i];
+				float imagPart = imag_Fuv[i];
+
+				// Calculate the phase
+				float phase = atan2(imagPart, realPart); //Note: to compute tan - 1, use the function atan2().
+
+				// Set real and imaginary parts to cos(theta) and sin(theta)
+				real_Fuv[i] = cos(phase);
+				imag_Fuv[i] = sin(phase);
 			}
 
-			fft2D(img->GetWidth(), img->GetHeight(), real_Fuv, imag_Fuv, -1); //Inverse 2dfft
+			fft2D(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), -1); //Inverse 2dfft
 
 			//Find min and max to normalize the real data and cast to uint8_t
 			float minVal = *std::min_element(real_Fuv.begin(), real_Fuv.end());
 			float maxVal = *std::max_element(real_Fuv.begin(), real_Fuv.end());
-
-			// Normalize and scale the frequency data for visualization
-			std::vector<uint8_t> frequencyData(img->GetHeight() * img->GetWidth());
-			for (size_t i = 0; i < real_Fuv.size(); ++i) {
-				float normalized = (real_Fuv[i] - minVal) / (maxVal - minVal);
-				frequencyData[i] = static_cast<uint8_t>(normalized * 255.0f);
-			}
 
 			//Dynamically allocate processdata vector
 			std::vector<uint8_t> processedData;
@@ -259,19 +337,18 @@ void AssignmentTest2::Question2() {
 
 			// Use processedData for creating the texture
 			if (!processedData.empty()) {
-				bool success = image_registry->AddTexture(currentImage, "2DFFT", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+				bool success = image_registry->AddTexture(currentImage, "2DFFT3b", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
 				emscripten_log(EM_LOG_CONSOLE, "%d", success);
 			}
-			
-			if (init_sample) {
-				init_sample = false;
+
+			if (init_sample3b) {
+				init_sample3b = false;
 			}
 		}
 	}
-
 	ImGui::End();
 }
-	void AssignmentTest2::Question3() {
+void AssignmentTest2::Question3() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question3"));
 
 		ImVec2 size = { 1200, 480 };
@@ -503,7 +580,7 @@ void AssignmentTest2::Question2() {
 			ImGui::End();
 		}
 	}
-	void AssignmentTest2::Question4() {
+void AssignmentTest2::Question4() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question4"));
 
 		ImVec2 size = { 1200, 1200 };
