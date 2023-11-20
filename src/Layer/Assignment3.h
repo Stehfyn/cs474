@@ -17,6 +17,7 @@ private:
 	void Experiment1();
 	void Experiment2();
 	void Experiment3();
+	bool inspect_sub = false;
 
 private:
 	std::vector<uint8_t> GenerateSubject(unsigned int width, 

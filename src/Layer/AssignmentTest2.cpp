@@ -20,8 +20,8 @@ namespace cs474 {
 
 	void AssignmentTest2::OnUIRender() {
 
-		this->Question1();
-		this->Question2();
+		//this->Question1();
+		//this->Question2();
 		//this->Question3();
 		//this->Question4();
 
@@ -313,7 +313,7 @@ void AssignmentTest2::Question2() {
 				float imagPart = imag_Fuv[i];
 
 				// Calculate the phase
-				float phase = atan2(realPart, imagPart); //Note: to compute tan - 1, use the function atan2().
+				float phase = atan2(imagPart, realPart); //Note: to compute tan - 1, use the function atan2().
 
 				// Set real and imaginary parts to cos(theta) and sin(theta)
 				real_Fuv[i] = cos(phase);
