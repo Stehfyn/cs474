@@ -27,6 +27,11 @@ private:
 	void GenerateSubject2a();
 	void GenerateSubject2b();
 	void GenerateSubject2c();
+
+	std::pair<std::vector<uint8_t>, std::vector<uint8_t>> ProcessSubject2(
+		const std::vector<uint8_t>& data,
+		unsigned int width,
+		unsigned int height);
 };
 }
 

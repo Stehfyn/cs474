@@ -200,10 +200,39 @@ void Assignment3::Experiment2() {
 	if (twoA_opt.has_value() && twoB_opt.has_value() && twoC_opt.has_value()) {
 		widgets::markdown("# 2.a");
 		ImGui::Image((ImTextureID)twoA_opt.value()->GetRendererID(), ImVec2(512, 512));
+
+		const std::optional<graphics::Texture>& twoAMag_opt = image_registry->GetTexture("lenna", "subject2a_mag");
+		const std::optional<graphics::Texture>& twoAMagshift_opt = image_registry->GetTexture("lenna", "subject2a_magshift");
+		if (twoAMag_opt.has_value() && twoAMagshift_opt.has_value()) {
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoAMag_opt.value()->GetRendererID(), ImVec2(512, 512));
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoAMagshift_opt.value()->GetRendererID(), ImVec2(512, 512));
+		}
+
 		widgets::markdown("# 2.b");
 		ImGui::Image((ImTextureID)twoB_opt.value()->GetRendererID(), ImVec2(512, 512));
+
+		const std::optional<graphics::Texture>& twoBMag_opt = image_registry->GetTexture("lenna", "subject2b_mag");
+		const std::optional<graphics::Texture>& twoBMagshift_opt = image_registry->GetTexture("lenna", "subject2b_magshift");
+		if (twoBMag_opt.has_value() && twoBMagshift_opt.has_value()) {
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoBMag_opt.value()->GetRendererID(), ImVec2(512, 512));
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoBMagshift_opt.value()->GetRendererID(), ImVec2(512, 512));
+		}
+
 		widgets::markdown("# 2.c");
 		ImGui::Image((ImTextureID)twoC_opt.value()->GetRendererID(), ImVec2(512, 512));
+
+		const std::optional<graphics::Texture>& twoCMag_opt = image_registry->GetTexture("lenna", "subject2c_mag");
+		const std::optional<graphics::Texture>& twoCMagshift_opt = image_registry->GetTexture("lenna", "subject2c_magshift");
+		if (twoCMag_opt.has_value() && twoCMagshift_opt.has_value()) {
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoCMag_opt.value()->GetRendererID(), ImVec2(512, 512));
+			ImGui::SameLine();
+			ImGui::Image((ImTextureID)twoCMagshift_opt.value()->GetRendererID(), ImVec2(512, 512));
+		}
 	}
 }
 void Assignment3::Experiment3() {
@@ -219,7 +248,7 @@ void Assignment3::Experiment3() {
 
 	widgets::markdown("# 3.a");
 
-	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
+	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(currentImage, ".pgm");
 
 	//Original image
@@ -421,15 +450,108 @@ void Assignment3::GenerateSubject2a() {
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	auto data = GenerateSubject(512, 512, 32, 32);
 	image_registry->AddTexture("lenna", "subject2a", graphics::make_texture(data, 512, 512, 1));
+
+	const auto& mag_n_shifted_mag = this->ProcessSubject2(data, 
+				512, 512);
+
+	const auto& mag = mag_n_shifted_mag.first;
+	const auto& shifted_mag = mag_n_shifted_mag.second;
+
+	image_registry->AddTexture("lenna", "subject2a_mag", graphics::make_texture(mag, 512, 512, 1));
+	image_registry->AddTexture("lenna", "subject2a_magshift", graphics::make_texture(shifted_mag, 512, 512, 1));
+
+
 }
 void Assignment3::GenerateSubject2b() {
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	auto data = GenerateSubject(512, 512, 64, 64);
 	image_registry->AddTexture("lenna", "subject2b", graphics::make_texture(data, 512, 512, 1));
+
+	const auto& mag_n_shifted_mag = this->ProcessSubject2(data, 
+				512, 512);
+
+	const auto& mag = mag_n_shifted_mag.first;
+	const auto& shifted_mag = mag_n_shifted_mag.second;
+
+	image_registry->AddTexture("lenna", "subject2b_mag", graphics::make_texture(mag, 512, 512, 1));
+	image_registry->AddTexture("lenna", "subject2b_magshift", graphics::make_texture(shifted_mag, 512, 512, 1));
 }
 void Assignment3::GenerateSubject2c() {
 	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	auto data = GenerateSubject(512, 512, 128, 128);
 	image_registry->AddTexture("lenna", "subject2c", graphics::make_texture(data, 512, 512, 1));
+
+	const auto& mag_n_shifted_mag = this->ProcessSubject2(data, 
+				512, 512);
+
+	const auto& mag = mag_n_shifted_mag.first;
+	const auto& shifted_mag = mag_n_shifted_mag.second;
+
+	image_registry->AddTexture("lenna", "subject2c_mag", graphics::make_texture(mag, 512, 512, 1));
+	image_registry->AddTexture("lenna", "subject2c_magshift", graphics::make_texture(shifted_mag, 512, 512, 1));
+}
+std::pair<std::vector<uint8_t>, std::vector<uint8_t>> Assignment3::ProcessSubject2(
+	const std::vector<uint8_t>& data, 
+	unsigned int width, 
+	unsigned int height) {
+
+	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
+
+	const auto& img = data;
+	std::vector<float> real(width * height);
+	std::vector<float> imag(width * height, 0.0); // Initialize with zeros to set phase to 0
+
+	// Split up data into real and imaginary in this case imaginary is 0.
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			real[i * width + j] = static_cast<float>(data[i * width + j]);
+		}
+	}
+
+	std::vector<float> mag;
+	mag.reserve(real.size());
+
+	fft2D(real, imag, width, height, 1); //Forward 2dfft
+	
+	for (size_t i = 0; i < real.size(); ++i) {
+		float magnitude = std::sqrt(real[i] * real[i] + imag[i] * imag[i]);
+		mag.push_back(0.5 * std::log(1 + magnitude)); // Set real part to magnitude
+	}
+
+	std::vector<uint8_t> processedMag;
+	processedMag.reserve(real.size());
+	//Find min and max to normalize the real data and cast to uint8_t
+	float minVal = *std::min_element(mag.begin(), mag.end());
+	float maxVal = *std::max_element(mag.begin(), mag.end());
+	for (float val : mag) {
+		// Normalize the value
+		float normalized = (val - minVal) / (maxVal - minVal);
+		uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+		processedMag.push_back(pixel);
+	}
+
+	
+	fftShift(real, imag, width, height); //Shift
+
+	std::vector<float> mag_shifted;
+	mag_shifted.reserve(real.size());
+
+	for (size_t i = 0; i < real.size(); ++i) {
+		float magnitude = std::sqrt(real[i] * real[i] + imag[i] * imag[i]);
+		mag_shifted.push_back(0.5 * std::log(1 + magnitude));
+	}
+
+	std::vector<uint8_t> processedMagShifted;
+	processedMagShifted.reserve(real.size());
+	minVal = *std::min_element(mag_shifted.begin(), mag_shifted.end());
+	maxVal = *std::max_element(mag_shifted.begin(), mag_shifted.end());
+	for (float val : mag_shifted) {
+		// Normalize the value
+		float normalized = (val - minVal) / (maxVal - minVal);
+		uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+		processedMagShifted.push_back(pixel);
+	}
+
+	return { processedMag, processedMagShifted };
 }
 }
