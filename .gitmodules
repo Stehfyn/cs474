@@ -26,3 +26,6 @@
 [submodule "external/imspinner"]
 	path = external/imspinner
 	url = https://github.com/dalerank/imspinner
+[submodule "external/implot"]
+	path = external/implot
+	url = https://github.com/epezent/implot

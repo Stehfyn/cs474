@@ -4,6 +4,8 @@
 
 // TODO: This is an example of a library function
 
+#define SWAP(a,b) do { auto tmp = a; a = b; b = tmp; } while (0)
+
 namespace cs474 {
 	void fcns474lib()
 	{
@@ -449,5 +451,116 @@ namespace cs474 {
 		}
 
 		return output;
+	}
+
+	void fft1D(float data[], unsigned long nn, int isign) {
+		unsigned long n, mmax, m, j, istep, i;
+		double wtemp, wr, wpr, wpi, wi, theta;
+		float tempr, tempi;
+
+		n = nn << 1; // n is the total size of the data array.
+		j = 0; // Start j from 0 for zero-based indexing.
+		// Bit-reversal section
+		for (i = 0; i < n; i += 2) { // Start i from 0 for zero-based indexing.
+			if (j > i) {
+				SWAP(data[j], data[i]);
+				SWAP(data[j + 1], data[i + 1]);
+			}
+			m = n >> 1;
+			while (m >= 2 && j >= m) { // Change condition to j >= m to include m.
+				j -= m;
+				m >>= 1;
+			}
+			j += m;
+		}
+
+		// Danielson-Lanczos section
+		mmax = 2;
+		while (n > mmax) {
+			istep = mmax << 1;
+			theta = isign * (2 * M_PI / mmax);
+			wtemp = sin(0.5 * theta);
+			wpr = -2.0 * wtemp * wtemp;
+			wpi = sin(theta);
+			wr = 1.0;
+			wi = 0.0;
+			for (m = 0; m < mmax; m += 2) { // Start m from 0 for zero-based indexing.
+				for (i = m; i < n; i += istep) { // Change condition to i < n to stay within array bounds.
+					j = i + mmax;
+					tempr = wr * data[j] - wi * data[j + 1];
+					tempi = wr * data[j + 1] + wi * data[j];
+					data[j] = data[i] - tempr;
+					data[j + 1] = data[i + 1] - tempi;
+					data[i] += tempr;
+					data[i + 1] += tempi;
+				}
+				wr = (wtemp = wr) * wpr - wi * wpi + wr;
+				wi = wi * wpr + wtemp * wpi + wi;
+			}
+			mmax = istep;
+		}
+		// Add the scaling step here, after the FFT computation for inverse
+		if (isign == -1) { 
+			for (i = 0; i < n; i++) {
+				data[i] /= nn;
+			}
+		}
+	}
+	void fft2D(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, int isign) {
+		// Temporary vectors for real and imaginary parts
+		std::vector<float> tempReal(2 * width, 0.0);
+		std::vector<float> tempImag(2 * height, 0.0);
+
+		// Apply the 1D FFT to each row
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
+				tempReal[2 * j] = realPart[i * width + j];
+				tempReal[2 * j + 1] = imagPart[i * width + j];
+			}
+
+			fft1D(tempReal.data(), width, isign);
+
+			for (int j = 0; j < width; j++) {
+				realPart[i * width + j] = tempReal[2 * j];
+				imagPart[i * width + j] = tempReal[2 * j + 1];
+			}
+		}
+
+		// Apply the 1D FFT to each column
+		for (int j = 0; j < width; j++) {
+			for (int i = 0; i < height; i++) {
+				tempImag[2 * i] = realPart[i * width + j];
+				tempImag[2 * i + 1] = imagPart[i * width + j];
+			}
+
+			fft1D(tempImag.data(), height, isign);
+
+			for (int i = 0; i < height; i++) {
+				realPart[i * width + j] = tempImag[2 * i];
+				imagPart[i * width + j] = tempImag[2 * i + 1];
+			}
+		}
+	}
+	void fftShift(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height) {
+		int halfWidth = width / 2;
+		int halfHeight = height / 2;
+
+		for (int y = 0; y < halfHeight; ++y) {
+			for (int x = 0; x < halfWidth; ++x) {
+				// Indices for the quadrants
+				int indexTL = y * width + x;
+				int indexBR = (y + halfHeight) * width + (x + halfWidth);
+				int indexTR = y * width + (x + halfWidth);
+				int indexBL = (y + halfHeight) * width + x;
+
+				// Swap top-left with bottom-right
+				SWAP(realPart[indexTL], realPart[indexBR]);
+				SWAP(imagPart[indexTL], imagPart[indexBR]);
+
+				// Swap top-right with bottom-left
+				SWAP(realPart[indexTR], realPart[indexBL]);
+				SWAP(imagPart[indexTR], imagPart[indexBL]);
+			}
+		}
 	}
 } // namespace cs474

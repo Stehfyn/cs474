@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <cstdio>
 #include <string>
@@ -44,6 +45,7 @@
 // #include "ImTween.h" // need to fix for -std=c++2a
 #include "ImCoolbar.h"
 #include "imspinner.h"
+#include "implot.h"
 #include "IconsFontAwesome6.h"
 #include "stb_image.h"
 

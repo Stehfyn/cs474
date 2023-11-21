@@ -3,6 +3,7 @@
 #include "Layer/Base.h"
 #include "Layer/Assignment1.h"
 #include "Layer/Assignment2.h"
+#include "Layer/Assignment3.h"
 #include "Layer/AssignmentTest1.h"
 #include "Layer/AssignmentTest2.h"
 
@@ -17,6 +18,7 @@ Application::Application(const ApplicationSpecification& spec)
     PushLayer<Base>();
     PushLayer<Assignment1>();
     PushLayer<Assignment2>();
+    PushLayer<Assignment3>();
 
     PushLayer<AssignmentTest1>();
     PushLayer<AssignmentTest2>();
@@ -84,6 +86,8 @@ void Application::InitializeImGui() {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForOpenGL(m_Window.get(), true);
     ImGui_ImplOpenGL3_Init();
+
+    ImPlot::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
 
