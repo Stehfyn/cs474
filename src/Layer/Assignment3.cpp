@@ -195,7 +195,7 @@ void Assignment3::Experiment1() {
 	static int item_current_idx = 0; // Here we store our selection data as an index.
 
 	//Start of 2d fft check
-	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
+	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 	const std::optional<graphics::Texture>& img_opt = image_registry->GetTexture(currentImage, ".pgm");
 
 	//Original image
@@ -204,7 +204,7 @@ void Assignment3::Experiment1() {
 		const auto& img = img_opt.value();
 		const std::vector<uint8_t>& rawData = img->GetRawData();
 		ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-		bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+		bool is_hovered_check1 = widgets::ImageInspector("inspect1", img, &inspect_check, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
 
 		ImGui::SameLine();
 
@@ -213,8 +213,8 @@ void Assignment3::Experiment1() {
 		if (sub_3a.has_value()) {
 			const auto& img_sub = sub_3a.value();
 			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-			bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-			if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			bool is_hovered_check2 = widgets::ImageInspector("inspect2", img_sub, &inspect_check, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+			if ((!is_hovered_check1) && (!is_hovered_check2)) inspect_check = false;
 		}
 		else {
 			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
@@ -230,51 +230,18 @@ void Assignment3::Experiment1() {
 		ImGui::SetNextItemWidth(150.0f);
 		if (ImGui::Combo("Image", &item_current_idx, items, IM_ARRAYSIZE(items))) {
 			currentImage = items[item_current_idx];
+			const std::optional<graphics::Texture>& next_img_opt = image_registry->GetTexture(currentImage, ".pgm");
+			if (next_img_opt.has_value()) this->Process2DFFT(next_img_opt.value(), currentImage);
 		}
 
-		ImGui::SameLine();
+		//ImGui::SameLine();
 
 		static bool init_sample3a = true;
-		ImGui::SetCursorPosX(img->GetWidth() + 20);
-		ImGui::SetNextItemWidth(200.0f);
-		if (ImGui::Button("2D-FFT")) {
-			// Declaring single float vectors for real and imaginary parts
-			std::vector<float> real(img->GetHeight() * img->GetWidth());
-			std::vector<float> imag(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros to set phase to 0
-
-			//Split up data into real and imaginary in this case imaginary is 0.
-			for (int i = 0; i < img->GetHeight(); i++) {
-				for (int j = 0; j < img->GetWidth(); j++) {
-					real[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
-				}
-			}
-
-			fft2D(real, imag, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
-
-			fft2D(real, imag, img->GetWidth(), img->GetHeight(), -1); //Inverse 2dfft
-
-			//Find min and max to normalize the real data and cast to uint8_t
-			float minVal = *std::min_element(real.begin(), real.end());
-			float maxVal = *std::max_element(real.begin(), real.end());
-
-			//Dynamically allocate processdata vector
-			std::vector<uint8_t> processedData;
-			processedData.reserve(real.size());
-
-			for (float val : real) {
-				// Normalize the value
-				float normalized = (val - minVal) / (maxVal - minVal);
-
-				// Scale to 0-255 and convert to uint8_t
-				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
-				processedData.push_back(pixel);
-			}
-
-			// Use processedData for creating the texture
-			if (!processedData.empty()) {
-				bool success = image_registry->AddTexture(currentImage, "2DFFT", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
-				emscripten_log(EM_LOG_CONSOLE, "%d", success);
-			}
+		//ImGui::SetCursorPosX(img->GetWidth() + 20);
+		//ImGui::SetNextItemWidth(200.0f);
+		//if (ImGui::Button("2D-FFT") || init_sample3a) {
+		if (init_sample3a) {
+			this->Process2DFFT(img, currentImage);
 
 			if (init_sample3a) {
 				init_sample3a = false;
@@ -353,7 +320,8 @@ void Assignment3::Experiment3() {
 		const auto& img = img_opt.value();
 		const std::vector<uint8_t>& rawData = img->GetRawData();
 		ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
-		bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+		ImVec2 not_hovered_offset1 = (is_hovered_exp3_3) ? ImVec2( 0.0f, -1.0f * (style.ItemSpacing.y + img->GetHeight() + yOffset)) : ImVec2( - 1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f );
+		is_hovered_exp3_1 = widgets::ImageInspector("inspect3", img, &inspect_exp3, { 0.0f, 0.0f }, not_hovered_offset1);
 	
 		ImGui::SameLine();
 
@@ -363,13 +331,13 @@ void Assignment3::Experiment3() {
 		if (sub_3a.has_value()) {
 			const auto& img_sub = sub_3a.value();
 			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
-			bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
-			if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+			ImVec2 not_hovered_offset2 = (is_hovered_exp3_3) ? ImVec2((style.ItemSpacing.x + img->GetWidth()), -1.0f * (style.ItemSpacing.y + img->GetHeight() + yOffset)) : ImVec2((style.ItemSpacing.x + img->GetWidth()), 0.0f);
+			is_hovered_exp3_2 = widgets::ImageInspector("inspect4", img_sub, &inspect_exp3, { 0.0f, 0.0f }, not_hovered_offset2);
 		}
 		else {
 			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 		}
-
+		yStart = ImGui::GetCursorPosY();
 		ImGui::Text("Original: ");
 		ImGui::SameLine();
 		ImGui::SetCursorPosX(img->GetWidth() + 20);
@@ -453,11 +421,14 @@ void Assignment3::Experiment3() {
 			// Part 3B image
 			const std::optional<graphics::Texture>& sub_3b = image_registry->GetTexture(currentImage, "2DFFT3b");
 
+			yEnd = ImGui::GetCursorPosY();
+			yOffset = yEnd - yStart;
 			if (sub_3b.has_value()) {
 				const auto& img_sub_3b = sub_3b.value();
 				ImVec2 img_sub_size3{ (float)img_sub_3b->GetWidth(), (float)img_sub_3b->GetHeight() };
-				bool is_hovered3 = widgets::ImageInspector("inspect1", img_sub_3b, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub_3b->GetWidth(), 0.0f });
-				if ((!is_hovered1) && (!is_hovered3)) inspect_sub = false;
+				ImVec2 not_hovered_offset3 = (is_hovered_exp3_1) ? ImVec2(0.0f, 1.0f * (style.ItemSpacing.y + img->GetHeight() + yOffset)) : ImVec2(-1.0f * (style.ItemSpacing.x + img->GetWidth()), 1.0f * (style.ItemSpacing.y + img->GetHeight()));
+				is_hovered_exp3_3 = widgets::ImageInspector("inspect5", img_sub_3b, &inspect_exp3, { 0.0f, 0.0f }, not_hovered_offset3);
+				if ((!is_hovered_exp3_1) && (!is_hovered_exp3_2) && (!is_hovered_exp3_3)) inspect_exp3 = false;
 			}
 			else {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
@@ -525,6 +496,47 @@ void Assignment3::Experiment3() {
 		}
 	}
 
+}
+void Assignment3::Process2DFFT(const graphics::Texture& img, const std::string& currentImage) {
+	std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
+
+	// Declaring single float vectors for real and imaginary parts
+	std::vector<float> real(img->GetHeight() * img->GetWidth());
+	std::vector<float> imag(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros to set phase to 0
+
+	//Split up data into real and imaginary in this case imaginary is 0.
+	for (int i = 0; i < img->GetHeight(); i++) {
+		for (int j = 0; j < img->GetWidth(); j++) {
+			real[i * img->GetWidth() + j] = static_cast<float>(img->GetRawData()[i * img->GetWidth() + j]);
+		}
+	}
+
+	fft2D(real, imag, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
+
+	fft2D(real, imag, img->GetWidth(), img->GetHeight(), -1); //Inverse 2dfft
+
+	//Find min and max to normalize the real data and cast to uint8_t
+	float minVal = *std::min_element(real.begin(), real.end());
+	float maxVal = *std::max_element(real.begin(), real.end());
+
+	//Dynamically allocate processdata vector
+	std::vector<uint8_t> processedData;
+	processedData.reserve(real.size());
+
+	for (float val : real) {
+		// Normalize the value
+		float normalized = (val - minVal) / (maxVal - minVal);
+
+		// Scale to 0-255 and convert to uint8_t
+		uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+		processedData.push_back(pixel);
+	}
+
+	// Use processedData for creating the texture
+	if (!processedData.empty()) {
+		bool success = image_registry->AddTexture(currentImage, "2DFFT", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+		emscripten_log(EM_LOG_CONSOLE, "%d", success);
+	}
 }
 std::vector<uint8_t> Assignment3::GenerateSubject(unsigned int width, unsigned int height, unsigned int sq_width, unsigned int sq_height)
 {
