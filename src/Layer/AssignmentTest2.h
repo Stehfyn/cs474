@@ -20,6 +20,10 @@ namespace cs474 {
 		void QuestionTest();
 
 	private:
+		int factor1 = 1;
+		int factor2 = 1;
+		bool inspect_sub1 = false;
+		bool inspect_sub2 = false;
 		int factor = 1;
 		bool inspect_sub = false;
 		float levels = (uint8_t)-1;

@@ -563,4 +563,49 @@ namespace cs474 {
 			}
 		}
 	}
+	void bandRejectFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float lowCutOff, float highCutOff) {
+		float lowCutOffSq = lowCutOff * lowCutOff;
+		float highCutOffSq = highCutOff * highCutOff;
+
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				float u = (i - height / 2) * (i - height / 2);
+				float v = (j - width / 2) * (j - width / 2);
+				float dSq = u + v;
+
+				if (dSq >= lowCutOffSq && dSq <= highCutOffSq) {
+					realPart[i * width + j] = 0.0; // Apply filter to real part
+					imagPart[i * width + j] = 0.0; // Apply filter to imaginary part
+				}
+			}
+		}
+	}
+	void applyFourNotchFilters(std::vector<float>& realPart, std::vector<float>& imagPart,
+		int width, int height,
+		int centerX1, int centerY1, int notchWidth1, int notchHeight1,
+		int centerX2, int centerY2, int notchWidth2, int notchHeight2,
+		int centerX3, int centerY3, int notchWidth3, int notchHeight3,
+		int centerX4, int centerY4, int notchWidth4, int notchHeight4) {
+		// Helper lambda to apply a single notch
+		auto applyNotch = [&](int centerX, int centerY, int notchWidth, int notchHeight) {
+			int halfWidth = notchWidth / 2;
+			int halfHeight = notchHeight / 2;
+
+			for (int i = centerY - halfHeight; i <= centerY + halfHeight; ++i) {
+				for (int j = centerX - halfWidth; j <= centerX + halfWidth; ++j) {
+					int idx = (i + height) % height * width + (j + width) % width; // Handle wrapping around edges
+					realPart[idx] = 0.0; // Zero out real part
+					imagPart[idx] = 0.0; // Zero out imaginary part
+				}
+			}
+		};
+
+		// Apply each notch
+		applyNotch(centerX1, centerY1, notchWidth1, notchHeight1);
+		applyNotch(centerX2, centerY2, notchWidth2, notchHeight2);
+		applyNotch(centerX3, centerY3, notchWidth3, notchHeight3);
+		applyNotch(centerX4, centerY4, notchWidth4, notchHeight4);
+	}
+
+
 } // namespace cs474

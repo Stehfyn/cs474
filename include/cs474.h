@@ -46,4 +46,11 @@ namespace cs474 {
 	void fft1D(float data[], unsigned long nn, int isign);
 	void fft2D(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, int isign);
 	void fftShift(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height);
+	void bandRejectFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float lowCutOff, float highCutOff);
+	void applyFourNotchFilters(std::vector<float>& realPart, std::vector<float>& imagPart,
+			int width, int height,
+			int centerX1, int centerY1, int notchWidth1, int notchHeight1,
+			int centerX2, int centerY2, int notchWidth2, int notchHeight2,
+			int centerX3, int centerY3, int notchWidth3, int notchHeight3,
+			int centerX4, int centerY4, int notchWidth4, int notchHeight4);
 } // namespace cs474
