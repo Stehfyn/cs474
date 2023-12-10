@@ -19,12 +19,10 @@ namespace cs474 {
 	}
 
 	void AssignmentTest2::OnUIRender() {
-
 		this->Question1();
 		//this->Question2();
 		//this->Question3();
 		//this->Question4();
-
 	}
 void AssignmentTest2::Question1() {
 		ImGui::BringWindowToDisplayFront(ImGui::FindWindowByName("Question1"));
@@ -49,9 +47,8 @@ void AssignmentTest2::Question1() {
 		std::shared_ptr<graphics::ImageRegistry> image_registry = global::GetResourceMutUnwrapped("g_ImageRegistry");
 
 		const std::optional<graphics::Texture>& img_opt_boy = image_registry->GetTexture("boy_noisy", ".pgm");
-		const std::optional<graphics::Texture>& img_opt_boynotch = image_registry->GetTexture("boy_noisy", ".pgm");
 
-		if (img_opt_boy.has_value() && img_opt_boynotch.has_value()) {
+		if (img_opt_boy.has_value()) {
 			const auto& style = ImGui::GetStyle();
 			const auto& boy_img = img_opt_boy.value();
 			const std::vector<uint8_t>& rawDataBoy = boy_img->GetRawData();
@@ -162,14 +159,26 @@ void AssignmentTest2::Question1() {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
+			ImGui::SameLine();
+
+			const std::optional<graphics::Texture>& boy_sub_blur = image_registry->GetTexture("boy_noisy", "blur");
+			if (boy_sub_blur.has_value()) {
+				const auto& boy_img_sub = boy_sub_blur.value();
+				ImVec2 img_sub_size{ (float)boy_img_sub->GetWidth(), (float)boy_img_sub->GetHeight() };
+				processed_x_2nd = ImGui::GetCursorPosX();
+				bool is_hovered4 = widgets::ImageInspector("inspect4", boy_img_sub, &inspect_sub2, { 0.0f, 0.0f }, { style.ItemSpacing.x + boy_img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered4)) inspect_sub2 = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
 			ImGui::Text("Frequency Regect Low: 35 High: 38 ");
 
 			ImGui::SameLine();
 
 			static bool init_sample2 = true;
 			if (init_sample2) {
-
-
 				// Declaring single float vectors for real and imaginary parts
 				std::vector<float> real(boy_img->GetHeight() * boy_img->GetWidth());
 				std::vector<float> imag(boy_img->GetHeight() * boy_img->GetWidth(), 0.0); // Initialize with zeros to set phase to 0
@@ -281,12 +290,65 @@ void AssignmentTest2::Question1() {
 				}
 			}
 
+			ImGui::SameLine();
+			float x_offset5 = 2 * style.ItemSpacing.x + (2 * ((float)boy_img->GetWidth()) - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset5);
+			static bool init_sample4 = true;
+			if (ImGui::Button("Guassian Filter##boy") || init_sample4) {
+				if (filterSize == 7) {
+					auto averagedData = smoothImage(boy_img->GetRawData(), boy_img->GetWidth(), boy_img->GetHeight(), filterSize, gausMask7x7);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("boy_noisy", "blur", graphics::make_texture(data, boy_img->GetWidth(), boy_img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				else {
+					auto averagedData = smoothImage(boy_img->GetRawData(), boy_img->GetWidth(), boy_img->GetHeight(), filterSize, gausMask15x15);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("boy_noisy", "blur", graphics::make_texture(data, boy_img->GetWidth(), boy_img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample4) {
+					init_sample4 = false;
+				}
+			}
+
+			std::vector<std::string> items = { "7x7", "15x15" };
+			static int item_current_idx = 0;
+			static int item_current_idx1 = 0;
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("Gaussian Filter", items[item_current_idx1].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items.size(); n++)
+				{
+					const bool is_selected = (item_current_idx1 == n);
+					if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+						item_current_idx1 = n;
+						if (items[n] == "7x7") {
+							filterSize = 7;
+						}
+						else {
+							filterSize = 15;
+						}
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
 		}
 
+
+		const std::optional<graphics::Texture>& img_opt_boynotch = image_registry->GetTexture("boy_noisy", ".pgm");
 		ImGui::Separator();
-		if (img_opt_boy.has_value() && img_opt_boynotch.has_value()) {
+		if (img_opt_boynotch.has_value()) {
 			const auto& style = ImGui::GetStyle();
-			const auto& boy_img = img_opt_boy.value();
+			const auto& boy_img = img_opt_boynotch.value();
 			const std::vector<uint8_t>& rawDataBoy = boy_img->GetRawData();
 
 			ImVec2 img_size{ (float)boy_img->GetWidth(), (float)boy_img->GetHeight() };
@@ -314,6 +376,8 @@ void AssignmentTest2::Question1() {
 			float x_offset = 2 * style.ItemSpacing.x + ((float)boy_img->GetWidth() - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
 			ImGui::Text("Processed FFT Spectrum ");
+
+			ImGui::SameLine();
 
 			float x_offset3 = 2 * style.ItemSpacing.x + (((float)boy_img->GetWidth()) - ImGui::GetCursorPosX());
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset3);
@@ -395,13 +459,27 @@ void AssignmentTest2::Question1() {
 				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
 			}
 
+			ImGui::SameLine();
+
+			const std::optional<graphics::Texture>& boy_sub_blur = image_registry->GetTexture("boy_noisy", "blur");
+			if (boy_sub_blur.has_value()) {
+				const auto& boy_img_sub = boy_sub_blur.value();
+				ImVec2 img_sub_size{ (float)boy_img_sub->GetWidth(), (float)boy_img_sub->GetHeight() };
+				processed_x_2nd = ImGui::GetCursorPosX();
+				bool is_hovered4 = widgets::ImageInspector("inspect4", boy_img_sub, &inspect_sub2, { 0.0f, 0.0f }, { style.ItemSpacing.x + boy_img_sub->GetWidth(), 0.0f });
+				if ((!is_hovered4)) inspect_sub2 = false;
+			}
+			else {
+				ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+			}
+
+
 			ImGui::Text("Frequency Regect Notch W:3 Notch H:3 ");
 
 			ImGui::SameLine();
 
 			static bool init_sample2 = true;
 			if (ImGui::Button("FrequencyReject##boy") || init_sample2) {
-
 
 				// Declaring single float vectors for real and imaginary parts
 				std::vector<float> real(boy_img->GetHeight() * boy_img->GetWidth());
@@ -459,10 +537,6 @@ void AssignmentTest2::Question1() {
 				}
 			}
 
-			//ImGui::SliderInt("Center X", &centerX, -512/2, 512/2);
-			//ImGui::SliderInt("Center Y", &centerY, -512/2, 512/2);
-			//ImGui::SliderInt("Notch Width", &notchWidth, 0, boy_img->GetWidth());
-			//ImGui::SliderInt("Notch Height", &notchHeight, 0, boy_img->GetHeight());
 
 			ImGui::SameLine();
 
@@ -525,8 +599,58 @@ void AssignmentTest2::Question1() {
 				}
 			}
 
-		}
+			ImGui::SameLine();
+			float x_offset5 = 2 * style.ItemSpacing.x + (2*((float)boy_img->GetWidth()) - ImGui::GetCursorPosX());
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset5);
+			static bool init_sample4 = true;
+			if (ImGui::Button("Guassian Filter##boy") || init_sample4) {
+				if (filterSize == 7) {
+					auto averagedData = smoothImage(boy_img->GetRawData(), boy_img->GetWidth(), boy_img->GetHeight(), filterSize, gausMask7x7);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("boy_noisy", "blur", graphics::make_texture(data, boy_img->GetWidth(), boy_img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				else {
+					auto averagedData = smoothImage(boy_img->GetRawData(), boy_img->GetWidth(), boy_img->GetHeight(), filterSize, gausMask15x15);
+					if (averagedData.has_value()) {
+						auto data = averagedData.value();
+						bool success = image_registry->AddTexture("boy_noisy", "blur", graphics::make_texture(data, boy_img->GetWidth(), boy_img->GetHeight(), 1));
+						emscripten_log(EM_LOG_CONSOLE, "%d", success);
+					}
+				}
+				if (init_sample4) {
+					init_sample4 = false;
+				}
+			}
 
+			std::vector<std::string> items = { "7x7", "15x15" };
+			static int item_current_idx = 0;
+			static int item_current_idx1 = 0;
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100);
+			if (ImGui::BeginCombo("Gaussian Filter", items[item_current_idx1].c_str()))
+			{
+				ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+				for (int n = 0; n < items.size(); n++)
+				{
+					const bool is_selected = (item_current_idx1 == n);
+					if (ImGui::Selectable(items[n].c_str(), is_selected)) {
+						item_current_idx1 = n;
+						if (items[n] == "7x7") {
+							filterSize = 7;
+						}
+						else {
+							filterSize = 15;
+						}
+					}
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+		}
 	ImGui::End();
 
 }
