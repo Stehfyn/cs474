@@ -53,4 +53,11 @@ namespace cs474 {
 			int centerX2, int centerY2, int notchWidth2, int notchHeight2,
 			int centerX3, int centerY3, int notchWidth3, int notchHeight3,
 			int centerX4, int centerY4, int notchWidth4, int notchHeight4);
+
+	void applyFourNotchFiltersNoise(std::vector<float>& realPart, std::vector<float>& imagPart,
+			int width, int height,
+			int centerX1, int centerY1, int notchWidth1, int notchHeight1,
+			int centerX2, int centerY2, int notchWidth2, int notchHeight2,
+			int centerX3, int centerY3, int notchWidth3, int notchHeight3,
+			int centerX4, int centerY4, int notchWidth4, int notchHeight4);
 } // namespace cs474
