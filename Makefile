@@ -95,6 +95,7 @@ CLIENT_SOURCES = \
 	$(LAYER_DIR)/Assignment1.cpp \
 	$(LAYER_DIR)/Assignment2.cpp \
 	$(LAYER_DIR)/Assignment3.cpp \
+	$(LAYER_DIR)/Assignment4.cpp \
 	$(LAYER_DIR)/AssignmentTest1.cpp \
 	$(LAYER_DIR)/AssignmentTest2.cpp \
 	$(WIDGETS_DIR)/Markdown.cpp \

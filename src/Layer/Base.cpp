@@ -12,6 +12,7 @@ void Base::OnAttach() {
     global::AddResource("g_ShowAssignment1", false);
     global::AddResource("g_ShowAssignment2", false);
     global::AddResource("g_ShowAssignment3", false);
+    global::AddResource("g_ShowAssignment4", false);
     utils::fetch_bytes("readme", "https://raw.githubusercontent.com/stehfyn/cs474/main/README.md");
 }
 void Base::OnDetach() {
@@ -56,7 +57,9 @@ void Base::DoTableOfContents() {
         static std::vector<std::string> as1_headers = { "Image Sampling", "Image Quantization", "Histogram Equalization", "Histogram Specification" };
         static std::vector<std::string> as2_headers = { "Correlation", "Averaging and Gaussian Smoothing", "Median Filtering", "Unsharp Masking and High Boost Filtering", "Gradient and Laplacian"};
         static std::vector<std::string> as3_headers = { "Experiment 1", "Experiment 2", "Experiment 3"};
-        static std::vector<std::vector<std::string>> headers = { as1_headers, as2_headers, as3_headers };
+        static std::vector<std::string> as4_headers = { "Noise Removal", "Convolution", "Homomorphic Filtering"};
+        static std::vector<std::vector<std::string>> headers = { as1_headers, as2_headers, as3_headers, as4_headers };
+
         if (ImGui::TreeNode("Programming Assignments")) {
             for (int h = 0; h < headers.size(); ++h) {
                 std::string hid = std::to_string(h + 1);
@@ -239,6 +242,7 @@ void Base::BuildDockspace() {
     ImGui::DockBuilderDockWindow("Assignment 1", id);
     ImGui::DockBuilderDockWindow("Assignment 2", id);
     ImGui::DockBuilderDockWindow("Assignment 3", id);
+    ImGui::DockBuilderDockWindow("Assignment 4", id);
 
     /*
     ImGui::DockBuilderDockWindow("Dear ImGui Demo", dock2);
