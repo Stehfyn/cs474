@@ -1,6 +1,52 @@
 #include "..\cs474.pch.h"
 #include "Assignment4.h"
 namespace cs474 {
+
+std::vector<float> convolve2D(const std::vector<uint8_t>& data, int image_width, int image_height, 
+                              const std::vector<int>& mask, int mask_width, int mask_height) {
+    
+    // Check if the input data is valid
+    if (data.size() != image_width * image_height) {
+        //throw std::invalid_argument("Data size does not match image dimensions.");
+    }
+
+    // Check if the mask data is valid
+    if (mask.size() != mask_width * mask_height) {
+        //throw std::invalid_argument("Mask size does not match mask dimensions.");
+    }
+
+    // Initialize the output vector
+    std::vector<float> output(data.size(), 0);
+
+    // Calculate half sizes for mask
+    int mask_width_half = mask_width / 2;
+    int mask_height_half = mask_height / 2;
+
+    // Perform convolution
+    for (int y = 0; y < image_height; ++y) {
+        for (int x = 0; x < image_width; ++x) {
+            float sum = 0.0f;
+
+            // Apply the mask
+            for (int my = -mask_height_half; my <= mask_height_half; ++my) {
+                for (int mx = -mask_width_half; mx <= mask_width_half; ++mx) {
+                    int ix = x + mx;
+                    int iy = y + my;
+
+                    // Check bounds
+                    if (ix >= 0 && ix < image_width && iy >= 0 && iy < image_height) {
+                        sum += data[iy * image_width + ix] * mask[(my + mask_height_half) * mask_width + (mx + mask_width_half)];
+                    }
+                }
+            }
+
+            output[y * image_width + x] = sum;
+        }
+    }
+
+    return output;
+}
+
 Assignment4::Assignment4() {
 }
 Assignment4::~Assignment4() {
@@ -678,6 +724,7 @@ void Assignment4::Question2() {
 
 	const std::optional<graphics::Texture>& lenna_fcon_opt = image_registry->GetTexture("lenna", "fcon");
 	const std::optional<graphics::Texture>& lenna_fcons_opt = image_registry->GetTexture("lenna", "freqfft2");
+	const std::optional<graphics::Texture>& lenna_fconsig_opt = image_registry->GetTexture("lenna", "sigfft2");
 
 	if (lenna_scon_opt.has_value() && lenna_scons_opt.has_value()) {
 		const auto& lenna = lenna_scon_opt.value();
@@ -694,19 +741,32 @@ void Assignment4::Question2() {
 	else {
 		const auto& img_lenna = lenna_opt.value();
 		const auto& rawDataLenna = img_lenna->GetRawData();
-		std::vector<float> sobel_x = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), sobelHorz, 3, 3);
-		std::vector<float> sobel_y = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), sobelVert, 3, 3);
+		//std::vector<float> horizontalResult = convolve1DHorizontal(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), sobelHorz);
+		//std::vector<float> magnitude = convolve1DVertical(horizontalResult, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), sobelVert);
+		static const std::vector<int> mysobelHorz = { 0,0,0,0, 0, -1, -2, -1, 0, 0, 0, 0, 0, 1, 2, 1};
+		static const std::vector<int> mysobelVert = { 0,0,0, 0, 0, -1, 0, 1, 0, -2, 0, 2, 0, -1, 0, 1 };
+		std::vector<float> sobel_x = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), mysobelHorz, 4, 4);
+		std::vector<float> sobel_y = convolve(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), mysobelVert, 4, 4);
+		//auto gtfo = convolve2D(rawDataLenna, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight(), mysobelHorz, 4, 4)
 		auto magnitude = gradient_magnitude(sobel_x, sobel_y, (int)img_lenna->GetWidth(), (int)img_lenna->GetHeight());
 
 		std::vector<float> sobel;
 		for (int i = 0; i < sobel_x.size(); ++i) {
-			sobel.push_back((sobel_x[i] * sobel_y[i]));
+			sobel.push_back(((sobel_x[i]) + (sobel_y[i]) - 1));
 		}
 
-		std::vector<uint8_t> normed = normr(magnitude);
+		std::vector<uint8_t> normed = normr(sobel);
+
+		for (auto& p : normed) {
+			p = 255 - p;
+		}
+
+
+		//std::vector<uint8_t> normed = normr(magnitude);
 		//std::vector<uint8_t> normed = normr(sobel);
-		//for (auto& p : normed) {
-		//	p = 255 - p;
+		//std::vector<uint8_t> normed;
+		//for (int i = 0; i < sobel_x.size(); ++i) {
+		//	normed.push_back((uint8_t)abs((sobel_x[i] - sobel_y[i])));
 		//}
 		image_registry->AddTexture("lenna", "scon", graphics::make_texture(normed, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 
@@ -756,12 +816,13 @@ void Assignment4::Question2() {
 
 	if (lenna_fcon_opt.has_value()) {
 		const auto& lennaf = lenna_fcon_opt.value();
-		//const auto& lennaf_spec = lenna_fcons_opt.value();
+		const auto& lennaf_spec = lenna_fcons_opt.value();
 
 		ImVec2 img_size{ (float)lennaf->GetWidth(), (float)lennaf->GetHeight() };
 		ImGui::Image((void*)(intptr_t)(lennaf->GetRendererID()), img_size);
-		//ImGui::SameLine();
-		//ImGui::Image((void*)(intptr_t)(lennaf_spec->GetRendererID()), img_size);
+		ImGui::SameLine();
+		ImGui::Image((void*)(intptr_t)(lennaf_spec->GetRendererID()), img_size);
+		ImGui::Image((void*)(intptr_t)(lenna_fconsig_opt.value()->GetRendererID()), img_size);
 	}
 	else {
 		const auto& img_lenna = lenna_opt.value();
@@ -773,7 +834,7 @@ void Assignment4::Question2() {
 		}
 
 		int i = 0;
-		static const std::vector<int> sobelHorz4x4 = { 0, -1, -2, -1, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0, 0};
+		static const std::vector<int> sobelHorz4x4 = { 0, -1, 0, 1, 0, -2, 0, 2, 0, -1, 0, 1, 0, 0, 0, 0};
 
 		std::vector<float> sobelKernel(img_lenna->GetWidth() * img_lenna->GetHeight(), 0.0f);
 		int kernelSize = 4;  // Sobel kernel size
@@ -812,9 +873,45 @@ void Assignment4::Question2() {
 		std::vector<float> kernelReal(sobelKernel), kernelImag(sobelKernel.size(), 0.0f);
 		fft2D(kernelReal, kernelImag, img_lenna->GetWidth(), img_lenna->GetHeight(), 1);
 
-		std::vector<float> out(img_lenna->GetWidth() * img_lenna->GetHeight());
-		std::vector<float> out_imag(img_lenna->GetWidth() * img_lenna->GetHeight(), 0.0f); //out_imag
-		std::vector<float> out_zero(img_lenna->GetWidth() * img_lenna->GetHeight(), 0.0f); //out_imag
+		auto do_fft = [&](std::vector<float> kreal, std::vector<float> kimag) {
+			std::vector<float> magnitude1(real.size());
+			for (int i = 0; i < real.size(); i++) {
+				magnitude1[i] = std::log(1 + std::sqrt(kreal[i] * kreal[i] + kimag[i] * kimag[i]));
+			}
+
+			auto temp_imag = kimag;
+			fftShift(magnitude1, temp_imag, img_lenna->GetWidth(), img_lenna->GetHeight()); //Shift
+
+			//Find min and max to normalize the real data and cast to uint8_t
+			float minVal = *std::min_element(magnitude1.begin(), magnitude1.end());
+			float maxVal = *std::max_element(magnitude1.begin(), magnitude1.end());
+
+			//Dynamically allocate processdata vector
+			std::vector<uint8_t> processedData;
+			processedData.reserve(magnitude1.size());
+
+			for (float val : magnitude1) {
+				// Normalize the value
+				float normalized = (val - minVal) / (maxVal - minVal);
+
+				// Scale to 0-255 and convert to uint8_t
+				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+				processedData.push_back(pixel);
+			}
+
+			// Use processedData for creating the texture
+			if (!processedData.empty()) {
+				//bool success = image_registry->AddTexture("lenna", "sigfft2", graphics::make_texture(processedData, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+				return processedData;
+				//emscripten_log(EM_LOG_CONSOLE, "%d", success);
+			}
+			return std::vector<uint8_t>{};
+		};
+
+		auto data_signal = do_fft(kernelReal, kernelImag);
+
+		bool success = image_registry->AddTexture("lenna", "sigfft2", graphics::make_texture(data_signal, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+
 		for (int i = 0; i < real.size(); ++i) {
 			float tempReal = real[i] * kernelReal[i] - imag[i] * kernelImag[i];
 			imag[i] = real[i] * kernelImag[i] + imag[i] * kernelReal[i];
@@ -825,8 +922,22 @@ void Assignment4::Question2() {
 		fftShift(real, imag, img_lenna->GetWidth(), img_lenna->GetHeight());
 		
 		std::vector<uint8_t> normed2 = normr(real);
-		image_registry->AddTexture("lenna", "fcon", graphics::make_texture(normed2, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 
+		std::vector<float> real3(img_lenna->GetHeight() * img_lenna->GetWidth());
+		std::vector<float> imag3(img_lenna->GetHeight() * img_lenna->GetWidth(), 0.0); // Initialize with zeros to set phase to 0
+
+		//Split up data into real and imaginary in this case imaginary is 0.
+		for (int i = 0; i < img_lenna->GetHeight(); i++) {
+			for (int j = 0; j < img_lenna->GetWidth(); j++) {
+				real3[i * img_lenna->GetWidth() + j] = static_cast<float>(normed2[i * img_lenna->GetWidth() + j]);
+			}
+		}
+
+		fft2D(real3, imag3, img_lenna->GetWidth(), img_lenna->GetHeight(), 1);
+		auto filtered_data = do_fft(real3, imag3);
+
+		image_registry->AddTexture("lenna", "fcon", graphics::make_texture(normed2, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
+		image_registry->AddTexture("lenna", "freqfft2", graphics::make_texture(filtered_data, img_lenna->GetWidth(), img_lenna->GetHeight(), 1));
 	}
 
 

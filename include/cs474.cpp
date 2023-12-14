@@ -350,6 +350,32 @@ namespace cs474 {
 		}
 		return convolution;
 	}
+	std::vector<float> convolve(const std::vector<float>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height)
+	{
+		std::vector<float> convolution(image_width * image_height, 0.0f);
+
+		for (int i = 0; i < image_height; ++i) {
+			for (int j = 0; j < image_width; ++j) {
+				std::vector<float> image_patch;
+
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						int image_i = i + mi - mask_height / 2;
+						int image_j = j + mj - mask_width / 2;
+
+						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
+							image_patch.push_back(data[image_i * image_width + image_j] * mask[mi * mask_width + mj]);
+						}
+						else {
+							image_patch.push_back(0);
+						}
+					}
+				}
+				convolution[i * image_width + j] = std::accumulate(image_patch.begin(), image_patch.end(), 0);
+			}
+		}
+		return convolution;
+	}
 	std::vector<float> gradient_magnitude(const std::vector<float>& dataX, const std::vector<float>& dataY, int image_width, int image_height)
 	{
 		std::vector<float> magnitude(image_width * image_height);
@@ -650,6 +676,44 @@ namespace cs474 {
 			}
 		}
 	}
+	std::vector<float> convolve1DHorizontal(const std::vector<uint8_t>& input, int width, int height, const std::vector<int>& kernel) {
+		std::vector<float> output(input.size(), 0);
+		int kernelSize = kernel.size();
+		int halfKernel = kernelSize / 2;
+    
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				float sum = 0.0f;
+				for (int k = -halfKernel; k <= halfKernel; k++) {
+					int idx = x + k;
+					if (idx >= 0 && idx < width) {
+						sum += input[y * width + idx] * kernel[halfKernel + k];
+					}
+				}
+				output[y * width + x] = sum;
+			}
+		}
+		return output;
+	}
 
+std::vector<float> convolve1DVertical(const std::vector<float>& input, int width, int height, const std::vector<int>& kernel) {
+    std::vector<float> output(input.size(), 0);
+    int kernelSize = kernel.size();
+    int halfKernel = kernelSize / 2;
+    
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            float sum = 0.0f;
+            for (int k = -halfKernel; k <= halfKernel; k++) {
+                int idx = y + k;
+                if (idx >= 0 && idx < height) {
+                    sum += input[idx * width + x] * kernel[halfKernel + k];
+                }
+            }
+            output[y * width + x] = sum;
+        }
+    }
+    return output;
+}
 
 } // namespace cs474

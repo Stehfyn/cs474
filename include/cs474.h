@@ -35,6 +35,7 @@ namespace cs474 {
 	std::optional<std::vector<uint8_t>> medianFilter(const std::vector<uint8_t>& data, int width, int height, int filterSize);
 	std::optional<std::vector<uint8_t>> unsharpAndBoostFilter(const std::vector<uint8_t>& originaldata, const std::vector<uint8_t>& blurredData, int width, int height, int kValue);
 	std::vector<float> convolve(const std::vector<uint8_t>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height);
+	std::vector<float> convolve(const std::vector<float>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height);
 	std::vector<float> gradient_magnitude(const std::vector<float>& dataX, const std::vector<float>& dataY, int image_width, int image_height);
 	std::vector<uint8_t> sharpen(const std::vector<uint8_t>& data, const std::vector<uint8_t>& edges, int image_width, int image_height);
 	std::vector<uint8_t> clamp_overflow_to_uint8_max(std::vector<float>& data);
@@ -61,4 +62,6 @@ namespace cs474 {
 			int centerX3, int centerY3, int notchWidth3, int notchHeight3,
 			int centerX4, int centerY4, int notchWidth4, int notchHeight4);
 	void highFrequencyEmphasisFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float D0, float c, float gammaL, float gammaH);
+	std::vector<float> convolve1DHorizontal(const std::vector<uint8_t>& input, int width, int height, const std::vector<int>& kernel);
+	std::vector<float> convolve1DVertical(const std::vector<float>& input, int width, int height, const std::vector<int>& kernel);
 } // namespace cs474
