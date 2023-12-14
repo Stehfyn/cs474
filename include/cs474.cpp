@@ -635,4 +635,26 @@ namespace cs474 {
 		}
 	}
 
+	void highFrequencyEmphasisFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float D0, float c, float gammaL, float gammaH) {
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				// Center the frequency domain representation
+				float u = i - height / 2.0f;
+				float v = j - width / 2.0f;
+
+				// Calculate squared distance from center
+				float dSq = u * u + v * v;
+
+				// Compute filter response at each location
+				float response = (gammaH - gammaL) * (1 - exp(-c * dSq / (D0 * D0))) + gammaL;
+
+				// Apply the filter to both the real and imaginary parts
+				int index = i * width + j;
+				realPart[index] *= response;
+				imagPart[index] *= response;
+			}
+		}
+	}
+
+
 } // namespace cs474

@@ -60,4 +60,5 @@ namespace cs474 {
 			int centerX2, int centerY2, int notchWidth2, int notchHeight2,
 			int centerX3, int centerY3, int notchWidth3, int notchHeight3,
 			int centerX4, int centerY4, int notchWidth4, int notchHeight4);
+	void highFrequencyEmphasisFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float D0, float c, float gammaL, float gammaH);
 } // namespace cs474

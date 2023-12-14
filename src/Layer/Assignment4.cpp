@@ -594,5 +594,166 @@ void Assignment4::Question3() {
 		global::UpdateResource("g_Assignment4ScrollToHomomorphic Filtering", false);
 	}
 	widgets::markdown("# 3. Homomorphic Filtering");
+
+	static float gammaL = 1.0f;
+	static float gammaH = 1.5f; 
+
+	static int item_current_idx = 0; 
+
+	std::shared_ptr<graphics::ImageRegistry> image_registry = std::shared_ptr<graphics::ImageRegistry>(global::GetResourceMutUnwrapped("g_ImageRegistry"));
+	const std::optional<graphics::Texture>& img_opt_girl = image_registry->GetTexture("girl", ".pgm");
+
+	//Original image
+	if (img_opt_girl.has_value()) {
+		const auto& style = ImGui::GetStyle();
+		const auto& img = img_opt_girl.value();
+		const std::vector<uint8_t>& rawData = img->GetRawData();
+		ImVec2 img_size{ (float)img->GetWidth(), (float)img->GetHeight() };
+		ImGui::Image((void*)(intptr_t)(img->GetRendererID()), img_size);
+		//bool is_hovered1 = widgets::ImageInspector("inspect1", img, &inspect_sub, { 0.0f, 0.0f }, { -1.0f * (style.ItemSpacing.x + img->GetWidth()), 0.0f });
+
+		ImGui::SameLine();
+
+		const std::optional<graphics::Texture>& sub_girlfft = image_registry->GetTexture("girl", "fft2");
+
+		if (sub_girlfft.has_value()) {
+			const auto& img_sub = sub_girlfft.value();
+			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+			ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+			//bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+			//if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+		}
+		else {
+			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+		}
+
+		ImGui::Text("Original Image: ");
+		ImGui::SameLine();
+		float x_offset = 2 * style.ItemSpacing.x + ((float)img->GetWidth() - ImGui::GetCursorPosX());
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_offset);
+		ImGui::Text("Centered Frequency Spectrum Of Original Image: ");
+
+
+		const std::optional<graphics::Texture>& sub_girl = image_registry->GetTexture("girl", "homomorphic");
+
+		if (sub_girl.has_value()) {
+			const auto& img_sub = sub_girl.value();
+			ImVec2 img_sub_size{ (float)img_sub->GetWidth(), (float)img_sub->GetHeight() };
+			ImGui::Image((void*)(intptr_t)(img_sub->GetRendererID()), img_sub_size);
+			//bool is_hovered2 = widgets::ImageInspector("inspect2", img_sub, &inspect_sub, { 0.0f, 0.0f }, { style.ItemSpacing.x + img_sub->GetWidth(), 0.0f });
+			//if ((!is_hovered1) && (!is_hovered2)) inspect_sub = false;
+		}
+		else {
+			ImGui::Image((void*)(intptr_t)(size_t)-1, img_size);
+		}
+
+
+		static bool init_sample3b = true;
+		ImGui::SetNextItemWidth(100.0f);
+		ImGui::SliderFloat("Gamma Low (yL)", &gammaL, 0.0f, 1.0f, "yL = %.3f");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(100.0f);
+		ImGui::SliderFloat("Gamma High (yH)", &gammaH, 1.0f, 2.0f, "yH = %.3f");
+
+		static bool init_sample = true;
+		if (init_sample) {
+			// Declaring single float vectors for real and imaginary parts
+			std::vector<float> real_Fuv(img->GetHeight() * img->GetWidth());
+			std::vector<float> imag_Fuv(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros
+
+			for (int i = 0; i < img->GetHeight(); i++) {
+				for (int j = 0; j < img->GetWidth(); j++) {
+					real_Fuv[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
+				}
+			}
+
+			fft2D(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
+
+			// Calculate the magnitude and apply log scaling
+			std::vector<float> magnitude1(real_Fuv.size());
+			for (int i = 0; i < real_Fuv.size(); i++) {
+				magnitude1[i] = std::log(1 + std::sqrt(real_Fuv[i] * real_Fuv[i] + imag_Fuv[i] * imag_Fuv[i]));
+			}
+
+			fftShift(magnitude1, imag_Fuv, img->GetWidth(), img->GetHeight()); //Shift
+
+			//Find min and max to normalize the real data and cast to uint8_t
+			float minVal = *std::min_element(magnitude1.begin(), magnitude1.end());
+			float maxVal = *std::max_element(magnitude1.begin(), magnitude1.end());
+
+			//Dynamically allocate processdata vector
+			std::vector<uint8_t> processedData;
+			processedData.reserve(magnitude1.size());
+
+			for (float val : magnitude1) {
+				// Normalize the value
+				float normalized = (val - minVal) / (maxVal - minVal);
+
+				// Scale to 0-255 and convert to uint8_t
+				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+				processedData.push_back(pixel);
+			}
+
+			// Use processedData for creating the texturesdfsdf
+			if (!processedData.empty()) {
+				bool success = image_registry->AddTexture("girl", "fft2", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+				emscripten_log(EM_LOG_CONSOLE, "%d", success);
+			}
+
+			if (init_sample) {
+				init_sample = false;
+			}
+		}
+
+		static bool init_sample1 = true;
+		if (ImGui::Button("Filter") || init_sample1) {
+			// Declaring single float vectors for real and imaginary parts
+			std::vector<float> real_Fuv(img->GetHeight() * img->GetWidth());
+			std::vector<float> imag_Fuv(img->GetHeight() * img->GetWidth(), 0.0); // Initialize with zeros
+
+			for (int i = 0; i < img->GetHeight(); i++) {
+				for (int j = 0; j < img->GetWidth(); j++) {
+					real_Fuv[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
+				}
+			}
+
+			fft2D(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), 1); //Forward 2dfft
+
+			fftShift(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight()); //Shift
+
+			highFrequencyEmphasisFilter(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), 1.8, 1, gammaL, gammaH);
+
+			fftShift(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight()); //Shift
+
+			fft2D(real_Fuv, imag_Fuv, img->GetWidth(), img->GetHeight(), -1); //Inverse 2dfft
+
+			//Find min and max to normalize the real data and cast to uint8_t
+			float minVal = *std::min_element(real_Fuv.begin(), real_Fuv.end());
+			float maxVal = *std::max_element(real_Fuv.begin(), real_Fuv.end());
+
+			//Dynamically allocate processdata vector
+			std::vector<uint8_t> processedData;
+			processedData.reserve(real_Fuv.size());
+
+			for (float val : real_Fuv) {
+				// Normalize the value
+				float normalized = (val - minVal) / (maxVal - minVal);
+
+				// Scale to 0-255 and convert to uint8_t
+				uint8_t pixel = static_cast<uint8_t>(normalized * 255.0f);
+				processedData.push_back(pixel);
+			}
+
+			// Use processedData for creating the texture
+			if (!processedData.empty()) {
+				bool success = image_registry->AddTexture("girl", "homomorphic", graphics::make_texture(processedData, img->GetWidth(), img->GetHeight(), 1));
+				emscripten_log(EM_LOG_CONSOLE, "%d", success);
+			}
+
+			if (init_sample1) {
+				init_sample1 = false;
+			}
+		}
+	}
 }
 }
