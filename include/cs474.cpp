@@ -14,13 +14,8 @@ namespace cs474 {
 	std::vector<uint8_t> normr(const std::vector<float>& data)
 	{
 		// First pass: Identify min and max values in the output_data
-		int min_val = INT_MAX;
-		int max_val = INT_MIN;
-		
-		for (const auto& p : data) {
-			if (p < min_val) min_val = p;
-			if (p > max_val) max_val = p;
-		}
+		auto min_val = *std::min_element(data.begin(), data.end());
+		auto max_val = *std::max_element(data.begin(), data.end());
 
 		std::vector<uint8_t> out_data(data.size());
 		for (int i = 0; i < data.size(); ++i) {
@@ -335,7 +330,7 @@ namespace cs474 {
 
 		for (int i = 0; i < image_height; ++i) {
 			for (int j = 0; j < image_width; ++j) {
-				std::vector<uint8_t> image_patch;
+				std::vector<float> image_patch;
 
 				for (int mi = 0; mi < mask_height; ++mi) {
 					for (int mj = 0; mj < mask_width; ++mj) {
