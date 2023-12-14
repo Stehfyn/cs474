@@ -14,13 +14,8 @@ namespace cs474 {
 	std::vector<uint8_t> normr(const std::vector<float>& data)
 	{
 		// First pass: Identify min and max values in the output_data
-		int min_val = INT_MAX;
-		int max_val = INT_MIN;
-		
-		for (const auto& p : data) {
-			if (p < min_val) min_val = p;
-			if (p > max_val) max_val = p;
-		}
+		auto min_val = *std::min_element(data.begin(), data.end());
+		auto max_val = *std::max_element(data.begin(), data.end());
 
 		std::vector<uint8_t> out_data(data.size());
 		for (int i = 0; i < data.size(); ++i) {
@@ -335,7 +330,33 @@ namespace cs474 {
 
 		for (int i = 0; i < image_height; ++i) {
 			for (int j = 0; j < image_width; ++j) {
-				std::vector<uint8_t> image_patch;
+				std::vector<float> image_patch;
+
+				for (int mi = 0; mi < mask_height; ++mi) {
+					for (int mj = 0; mj < mask_width; ++mj) {
+						int image_i = i + mi - mask_height / 2;
+						int image_j = j + mj - mask_width / 2;
+
+						if (image_i >= 0 && image_i < image_height && image_j >= 0 && image_j < image_width) {
+							image_patch.push_back(data[image_i * image_width + image_j] * mask[mi * mask_width + mj]);
+						}
+						else {
+							image_patch.push_back(0);
+						}
+					}
+				}
+				convolution[i * image_width + j] = std::accumulate(image_patch.begin(), image_patch.end(), 0);
+			}
+		}
+		return convolution;
+	}
+	std::vector<float> convolve(const std::vector<float>& data, int image_width, int image_height, const std::vector<int>& mask, int mask_width, int mask_height)
+	{
+		std::vector<float> convolution(image_width * image_height, 0.0f);
+
+		for (int i = 0; i < image_height; ++i) {
+			for (int j = 0; j < image_width; ++j) {
+				std::vector<float> image_patch;
 
 				for (int mi = 0; mi < mask_height; ++mi) {
 					for (int mj = 0; mj < mask_width; ++mj) {
@@ -563,4 +584,136 @@ namespace cs474 {
 			}
 		}
 	}
+	void bandRejectFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float lowCutOff, float highCutOff) {
+		float lowCutOffSq = lowCutOff * lowCutOff;
+		float highCutOffSq = highCutOff * highCutOff;
+
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				float u = (i - height / 2) * (i - height / 2);
+				float v = (j - width / 2) * (j - width / 2);
+				float dSq = u + v;
+
+				if (dSq >= lowCutOffSq && dSq <= highCutOffSq) {
+					realPart[i * width + j] = 0.0; // Apply filter to real part
+					imagPart[i * width + j] = 0.0; // Apply filter to imaginary part
+				}
+			}
+		}
+	}
+	void applyFourNotchFilters(std::vector<float>& realPart, std::vector<float>& imagPart,
+		int width, int height,
+		int centerX1, int centerY1, int notchWidth1, int notchHeight1,
+		int centerX2, int centerY2, int notchWidth2, int notchHeight2,
+		int centerX3, int centerY3, int notchWidth3, int notchHeight3,
+		int centerX4, int centerY4, int notchWidth4, int notchHeight4) {
+		// Helper lambda to apply a single notch
+		auto applyNotch = [&](int centerX, int centerY, int notchWidth, int notchHeight) {
+			int halfWidth = notchWidth / 2;
+			int halfHeight = notchHeight / 2;
+
+			for (int i = centerY - halfHeight; i <= centerY + halfHeight; ++i) {
+				for (int j = centerX - halfWidth; j <= centerX + halfWidth; ++j) {
+					int idx = (i + height) % height * width + (j + width) % width; // Handle wrapping around edges
+					realPart[idx] = 0.0; // Zero out real part
+					imagPart[idx] = 0.0; // Zero out imaginary part
+				}
+			}
+		};
+
+		// Apply each notch
+		applyNotch(centerX1, centerY1, notchWidth1, notchHeight1);
+		applyNotch(centerX2, centerY2, notchWidth2, notchHeight2);
+		applyNotch(centerX3, centerY3, notchWidth3, notchHeight3);
+		applyNotch(centerX4, centerY4, notchWidth4, notchHeight4);
+	}
+
+	void applyFourNotchFiltersNoise(std::vector<float>& realPart, std::vector<float>& imagPart,
+		int width, int height,
+		int centerX1, int centerY1, int notchWidth1, int notchHeight1,
+		int centerX2, int centerY2, int notchWidth2, int notchHeight2,
+		int centerX3, int centerY3, int notchWidth3, int notchHeight3,
+		int centerX4, int centerY4, int notchWidth4, int notchHeight4) {
+		// Helper lambda to check if a point is within a notch
+		auto isWithinNotch = [&](int x, int y, int centerX, int centerY, int notchWidth, int notchHeight) {
+			int halfWidth = notchWidth / 2;
+			int halfHeight = notchHeight / 2;
+			return x >= centerX - halfWidth && x <= centerX + halfWidth && y >= centerY - halfHeight && y <= centerY + halfHeight;
+		};
+
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				int idx = i * width + j;
+				// Check if the point is outside all four notches
+				if (!isWithinNotch(j, i, centerX1, centerY1, notchWidth1, notchHeight1) &&
+					!isWithinNotch(j, i, centerX2, centerY2, notchWidth2, notchHeight2) &&
+					!isWithinNotch(j, i, centerX3, centerY3, notchWidth3, notchHeight3) &&
+					!isWithinNotch(j, i, centerX4, centerY4, notchWidth4, notchHeight4)) {
+					realPart[idx] = 0.0; // Zero out real part
+					imagPart[idx] = 0.0; // Zero out imaginary part
+				}
+			}
+		}
+	}
+
+	void highFrequencyEmphasisFilter(std::vector<float>& realPart, std::vector<float>& imagPart, int width, int height, float D0, float c, float gammaL, float gammaH) {
+		for (int i = 0; i < height; ++i) {
+			for (int j = 0; j < width; ++j) {
+				// Center the frequency domain representation
+				float u = i - height / 2.0f;
+				float v = j - width / 2.0f;
+
+				// Calculate squared distance from center
+				float dSq = u * u + v * v;
+
+				// Compute filter response at each location
+				float response = (gammaH - gammaL) * (1 - exp(-c * dSq / (D0 * D0))) + gammaL;
+
+				// Apply the filter to both the real and imaginary parts
+				int index = i * width + j;
+				realPart[index] *= response;
+				imagPart[index] *= response;
+			}
+		}
+	}
+	std::vector<float> convolve1DHorizontal(const std::vector<uint8_t>& input, int width, int height, const std::vector<int>& kernel) {
+		std::vector<float> output(input.size(), 0);
+		int kernelSize = kernel.size();
+		int halfKernel = kernelSize / 2;
+    
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				float sum = 0.0f;
+				for (int k = -halfKernel; k <= halfKernel; k++) {
+					int idx = x + k;
+					if (idx >= 0 && idx < width) {
+						sum += input[y * width + idx] * kernel[halfKernel + k];
+					}
+				}
+				output[y * width + x] = sum;
+			}
+		}
+		return output;
+	}
+
+std::vector<float> convolve1DVertical(const std::vector<float>& input, int width, int height, const std::vector<int>& kernel) {
+    std::vector<float> output(input.size(), 0);
+    int kernelSize = kernel.size();
+    int halfKernel = kernelSize / 2;
+    
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            float sum = 0.0f;
+            for (int k = -halfKernel; k <= halfKernel; k++) {
+                int idx = y + k;
+                if (idx >= 0 && idx < height) {
+                    sum += input[idx * width + x] * kernel[halfKernel + k];
+                }
+            }
+            output[y * width + x] = sum;
+        }
+    }
+    return output;
+}
+
 } // namespace cs474

@@ -134,13 +134,13 @@ void Assignment3::Experiment1() {
 
 	widgets::markdown("# 1.a");
 
-	// Plotting the FFT results for the selected signal
+	// Plotting the FFT results for the selected signal as dots
 	ImPlot::SetNextAxesToFit();
 	if (ImPlot::BeginPlot("Signal 1D-FFT Results", "X-axis", "Y-axis", ImVec2(400, 400), 0, ImPlotAxisFlags_AutoFit)) {
 		ImPlot::SetupAxes("X", "Y", ImPlotAxisFlags_AutoFit, ImPlotAxisFlags_AutoFit);
-		ImPlot::PlotLine("Real Part", realPart.data(), nn);
-		ImPlot::PlotLine("Imaginary Part", imagPart.data(), nn);
-		ImPlot::PlotLine("Magnitude", magnitude.data(), nn);
+		ImPlot::PlotScatter("Real Part", realPart.data(), nn);
+		ImPlot::PlotScatter("Imaginary Part", imagPart.data(), nn);
+		ImPlot::PlotScatter("Magnitude", magnitude.data(), nn);
 		ImPlot::EndPlot();
 	}
 

@@ -1,9 +1,13 @@
 #include "cs474.pch.h"
 #include "Application.h"
+
 #include "Layer/Base.h"
+
 #include "Layer/Assignment1.h"
 #include "Layer/Assignment2.h"
 #include "Layer/Assignment3.h"
+#include "Layer/Assignment4.h"
+
 #include "Layer/AssignmentTest1.h"
 #include "Layer/AssignmentTest2.h"
 
@@ -16,12 +20,14 @@ Application::Application(const ApplicationSpecification& spec)
     global::AddResource("g_FirstFrame", true);
 
     PushLayer<Base>();
+
     PushLayer<Assignment1>();
     PushLayer<Assignment2>();
     PushLayer<Assignment3>();
+    PushLayer<Assignment4>();
 
-    PushLayer<AssignmentTest1>();
-    PushLayer<AssignmentTest2>();
+    //PushLayer<AssignmentTest1>();
+    //PushLayer<AssignmentTest2>();
 }
 
 Application::~Application() {
