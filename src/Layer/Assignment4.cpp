@@ -713,7 +713,8 @@ void Assignment4::Question3() {
 
 			for (int i = 0; i < img->GetHeight(); i++) {
 				for (int j = 0; j < img->GetWidth(); j++) {
-					real_Fuv[i * img->GetWidth() + j] = static_cast<float>(rawData[i * img->GetWidth() + j]);
+					int index = i * img->GetWidth() + j;
+					real_Fuv[index] = log(1.0f + static_cast<float>(rawData[index])); //log scaling
 				}
 			}
 
